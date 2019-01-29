@@ -1,0 +1,82 @@
+.showpages
+{
+    margin:auto;
+
+}
+
+.toptitle
+{
+    width: calc(100% - 255px);
+    position: fixed;
+    top: 0;
+    right:0;
+    transition: width 0.3s;
+}
+.long {
+    width: 100%;
+}
+
+.tipsbox
+{
+    max-width: 55vw;
+    margin-top: 10vh;
+}
+.col-top-15px
+{
+    margin-top: 15px;
+/*    display:block;
+    float:none;
+    width:100%;*/
+}
+
+.col-bottom-40px
+{
+    margin-bottom: 40px;
+}
+.page-width
+{
+    max-width: 60vw;
+    margin: auto;
+}
+.page-start
+{
+    margin-top: 10vh;
+}
+
+.small-font{
+    font-size:0.7em;
+    height: 100%;
+}
+
+@media screen and ( max-aspect-ratio:16/16	)
+{
+    .tipsbox
+    {
+        max-width: 80vw;
+    }
+
+    .page-width
+    {
+        max-width: 80vw;
+    }
+}
+
+@media screen and ( max-aspect-ratio:10/16	)
+{
+    .tipsbox
+    {
+        max-width: 98vw;
+    }
+
+    .page-width
+    {
+        max-width: 98vw;
+    }
+}
+@media screen and ( max-aspect-ratio:12/9	)
+{
+    .toptitle
+    {
+        /*width: calc(100% );*/
+    }
+}
