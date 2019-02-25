@@ -42,6 +42,7 @@
     .box{
         transform: scale(0.4);
         margin-bottom: 0.5rem;
+        transition: all 0.3s ease-in-out 0s;
     }
     .bbox{
         transform: scale(0.5);
@@ -61,4 +62,9 @@
         width: 1.5625rem;
         transform: rotate(45deg) translateX(-0.45rem) translateY(-0.122rem);
     }
+    .box:hover
+    {
+        transform:scaleX(0.5) scaleY(0.45);
+    }
+
 </style>

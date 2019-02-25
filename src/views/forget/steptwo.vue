@@ -28,12 +28,10 @@
 </template>
 
 <script>
-    import store from '@/store'
-    import ajax from '@/plugings/myajax'
+    import ajax from  './../../plugings/API/myajax'
     export default {
         name: "steptwo",
-        store,
-        data()
+       data()
         {
             return {
                 button:true,

@@ -1,58 +1,60 @@
-import Resource from 'vue-resource';
-import Vue from 'vue'
-//import vueEvent from 'vevent'
-// Vue.use(Resource);
+
 import JsEncrypt from 'jsencrypt'
 import axios from 'axios'
-//import Vue from 'vue'
-import store from './../store'
-// import Vue from 'vue'
-export default
-{
-    name:'myajax',
-    //rootpath:'http://182.254.134.224/laravel',
-   // rootpath:'http://127.0.0.1:8000/api/',
-    store,
+import store from '../../store'
+import Vue from 'vue'
+import key from './key'
+//import process from ''
+
+class ajax{
+
+    constructor() {
+        this.CancelToken = axios.CancelToken;
+        this.source = this.CancelToken.source();
+        this.baseURL = 'http://127.0.0.1:8002/api/';
+    };
+
     ajax(url,data,callback,errcallback = (err)=>{console.log(err.response)},method = 'get',front = true)
     {
         if (front)
         {
-            store.commit('Nprogress',true);
+            store.commit('storeNew',{key:"Nprogress",data:true});
         }
-        let encrypted = '';
-      //  console.log(data);
-        //console.log(JSON.stringify(data.secret));
-        if (data.secret )
+        let encrypted = {};
+        let newdatas;
+        if (data !== {})
         {
-            if (localStorage.getItem('pubkey'))
+            if (data.secret )
             {
                 let jse = new JsEncrypt;
-                let pubkey = JSON.parse(localStorage.getItem("pubkey"));
+                let pubkey = key.publickey;
+                //let pubkey = JSON.parse(localStorage.getItem("pubkey"));
                 jse.setPublicKey(decodeURIComponent(pubkey));
-                encrypted = jse.encrypt(JSON.stringify(data.secret));
-                if (encrypted === false)
+                let flag = true;
+                for (let i in data.secret)
                 {
-                    return 'key不对';
+                    encrypted[i] = jse.encrypt(data.secret[i]);
+                    flag = encrypted[i] !== false && encrypted[i] !==  '';
                 }
+                // encrypted = jse.encrypt(JSON.stringify(data.secret));
+                if (flag === false)
+                {
+                    return console.log('key不对');
+                }
+            }
+            if (data.secret)
+            {
+                newdatas = Object.assign({},data.public,{secret:encrypted});
             }
             else
             {
-                return false;
+                newdatas = Object.assign({},data.public,);
             }
-        }
-
-        let newdatas;
-        if (data.secret)
-        {
-            let sname = data.sname ? data.sname:'priv';
-            newdatas = Object.assign({},data.public,{[sname]:encrypted});
         }
         else
         {
-            newdatas = Object.assign({},data.public,);
+            newdatas = {};
         }
-      //  console.log('fffff');
-      //  console.log(newdatas);
         let ways = 'params';
         if ([ 'put','post','patch'].includes(method) )
         {
@@ -60,85 +62,107 @@ export default
         }
         const instance = axios.create({
             method:method,
-            baseURL: 'http://127.0.0.1:8000/api/',
+            baseURL: this.baseURL,
             headers:{
-                'Content-Type':'application/x-www-form-urlencoded ',
-               // 'Content-Type':'multipart/form-data'
-               // 'Content-Type':'application/json',
+                 'Content-Type':'application/json',
             },
             //cancelToken: source.token,
             timeout: 5000,
             responseType: 'json',
             withCredentials:true,   //加了这段就可以跨域了
-
-          //  [ways]: newdatas,
-            params:newdatas,
+            [ways]: newdatas,
+            //data:newdatas,
+           // params:newdatas,
         });
-/*        instance.interceptors.request.use((response)=>{
-            store.commit('Nprogress',false);
-        },(err)=>{
-            store.commit('Nprogress',false);
-        });*/
+        if (localStorage.getItem('user_token'))
+            instance.defaults.headers.common['Authorization'] = 'Bearer '+localStorage.getItem('user_token');
+        else
+            instance.defaults.headers.common['Authorization'] = '';
+        console.log(localStorage.getItem('user_token'));
+        axios.interceptors.response.use( (response) =>{
+            if (respose.headers.Authorization)
+            {
+                localStorage.setItem('user_token',respose.headers.Authorization);
+            }
+            return response;
+        },  (error)=> {
+            return Promise.reject(error);
+        });
+
         instance(
             url,
             method,
-         //   newdatas,
-
         ).then(callback,errcallback).then(()=>{
-            //console.log(front);
-            front ? store.commit('Nprogress',false):'';});
+            //console.log(process.env.VUE_APP_API_URL);
+            front ? store.commit('storeNew',{key:"Nprogress",data:true}):'';});
         return true;
-    },
+    };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*    ajax (that,url,data,callback ,method = 'post', errcallback = (err)=>{console.log(err)} )
+    putfile(url,data,index,callback,Progress = (e)=>{console.log((e.loaded / e.total * 100 | 0) + '%')},errcallback = (err)=>{console.log(err.response)},method = 'post')
     {
-        // const url = "http://182.254.134.224/new/apig/apikeys.php";
-        if (localStorage.getItem('idsession') && localStorage.getItem("pubkey"))
-            if (localStorage.getItem('idsession') !== "" || localStorage.getItem("pubkey") !== '') {
+            let file = data.file;
+            let datas = new FormData();
+            datas.append('file',file);
+            datas.append('name', file.name);
+            datas.append('size', file.size);
+            datas.append('md5',data.md5);
+            /* if ([ 'put','post','patch'].includes(method) )
+             {
+                 ways = 'data';
+             }*/
+            const instance = axios.create({
+                method:method,
+                baseURL: this.baseURL ,
+                headers:{
+                    // 'Content-Type':'application/x-www-form-urlencoded ',
+                    'Content-Type':'multipart/form-data'
+                    // 'Content-Type':'application/json',
+                },
+                //cancelToken: source.token,
+                timeout: 1000000000,
+                responseType: 'json',
+                withCredentials:true,   //加了这段就可以跨域了
+                data:datas,
+                cancelToken: this.source.token,
+                //  [ways]: newdatas,
+                //  params:newdatas,
+                onUploadProgress:(e)=>{
+                    Progress(e);
+                },
+            });
 
-                let sess = JSON.parse(localStorage.getItem('idsession'));
-                let pubkey = JSON.parse(localStorage.getItem("pubkey"));
-                let jse = new JsEncrypt;
-                jse.setPublicKey(decodeURIComponent(pubkey));
-                let encrypted = jse.encrypt(sess);
-                // let enkey = jse.encrypt(privkey);
-                if (encrypted == false) {
-                    /!*          this.getk();
-                              this.message = "pub key 不正确";*!/
-                    console.log("pub key 不正确");
-                }
-                else
-                {
-                    let post = Object.assign({},{utoken:sess},{priv: encrypted},postdata);
-                    // console.log(post);
-                    that.$http.post(url,post,{emulateJSON: true}).then((response)=>{
-                            callback(response);
-                        },
-                        (err)=>{
-                            errcallback(err);
-                        }
-                    );
-                }
-            }
-    },*/
+            instance(
+                url,
+                method,
+            ).then(callback,errcallback);
+            return true;
+
+    };
+     choosecancel(message)
+    {
+        this.source.cancel(message);
+    };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export default
+{
+
+    name:'myajax',
+    store,
+    ajax,
 
 }

@@ -36,14 +36,12 @@
 
 <script>
 
-    import store from '@/store'
-    import ajax from '@/plugings/myajax'
-    import Mydialog from "../../template/mydialog";
+    import ajax from '../../plugings/API/myajax'
+    import Mydialog from "../../components/myDialog";
 
     export default {
         components: {Mydialog},
         name: "stepthree",
-        store,
         data()
         {
           return {
@@ -75,6 +73,10 @@
               ],
 
           }
+        },
+        created()
+        {
+            this.$store.commit('storeNew',{key:'title_name',data:'Reset'});
         },
         beforeMount()
         {

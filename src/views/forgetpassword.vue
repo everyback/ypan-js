@@ -22,12 +22,10 @@
 </template>
 
 <script>
-    import store from './../../store'
-    import ajax from  './../../plugings/myajax'
+    import ajax from  './../plugings/API/myajax'
 
     export default {
         name: "forgetpassword",
-        store,
         data(){
             return {
            //     activeStep: 0,
@@ -56,11 +54,10 @@
             ajax.ajax(url,{},(response)=>{
                 this.$router.push('/');
             },(err)=>{
-           //     if (localStorage.getItem('pubkey') === '')
-             //   {
                     this.getkey();
-              //  }
-            })
+            });
+                this.$store.commit('storeNew',{key:'title_name',data:'Forget'});
+                this.$store.commit('storeNew',{key:'sidebarOpen',data:false});
         },
         methods:
         {
@@ -69,7 +66,6 @@
                 let url = 'getkey';
                 let data ={};
                 let a = ajax.ajax(url,data,(response)=>{
-                    //       console.log(response.data.result);
                     localStorage.setItem('pubkey',JSON.stringify(response.data.result.pubkey));
                 });
                 if (a === false)

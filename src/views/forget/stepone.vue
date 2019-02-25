@@ -25,12 +25,11 @@
 </template>
 
 <script>
-    import store from './../../../store'
-    import ajax from  './../../../plugings/myajax'
+
+    import ajax from  './../../plugings/API/myajax'
 
     export default {
         name: "stepone",
-        store,
         data() {
             return {
                 loading: false,
