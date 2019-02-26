@@ -5,7 +5,7 @@
                 <mu-form   ref="form" :model="users">
                     <mu-row justify-content="center" align-content="center" fill wrap="wrap" >
                         <mu-col span="12">
-                            <mu-appbar  title="登陆" color="primary">
+                            <mu-appbar  title="登陆" color="grey300" :z-depth="0"	>
                             </mu-appbar>
                         </mu-col>
                         <mu-col span="10" md="8">
@@ -217,7 +217,7 @@
 
     .height
     {
-        margin-top: 25vh;
+        margin-top: 15vh;
     }
 
 </style>

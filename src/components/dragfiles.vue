@@ -21,7 +21,7 @@
         data()
         {
             return {
-
+                filesarray:[],
             };
         },
         mounted()
@@ -49,8 +49,14 @@
                 this.cancelall(e);
                 clearTimeout(timer);
                 this.$store.commit("storeNew",{key:"drag",data:false});
-                console.log(e.dataTransfer.files);
-                this.portionfiles(e.dataTransfer.files);
+/*                console.log(e.dataTransfer.items[0].webkitGetAsEntry().createReader().readEntries((entries)=> {
+                    entries.forEach((entry)=> {
+                        console.log(entry)
+                    })}));*/
+              //  console.log(e.dataTransfer.files.webkitGetAsEntry());
+              //  console.log(e.dataTransfer.items);
+                this.fetchfile(e.dataTransfer.items);
+             //   this.portionfiles(e.dataTransfer.files);
                 return false;
             },false);
 
@@ -63,12 +69,133 @@
         methods:
             {
 
+                fetchfile(items)
+                {
+                    let files = [];
+                    (async (files)=> {
+                        for (let i=0 ;i<items.length; i++)
+                        {
+                            if (items[i].webkitGetAsEntry().isDirectory)
+                            {
+                                files =  files.concat(await this.scanFiles(items[i].webkitGetAsEntry()));
+                          //      console.log(files);
+                            }
+                            else
+                            {
+                                files.push(items[i].getAsFile());
+                               // this.filesarray.push(items[i].getAsFile());
+                            }
+                        }
+                        console.log(files);
+                      //  this.portionfiles(files);
+                    })(files);
+                },
+
+                scanFiles(item)
+                {
+                    //console.log(files);
+                    // 要发送一个建立文件夹信息
+                    //   nowpath   +item.fullpath
+
+                    return new Promise( (resolve)=> {
+                        let files = [];
+                        let reader = item.createReader();
+                        let promises = [];
+                       // let i = 0;
+                        reader.readEntries(async (entries)=>{
+                         //   let files = [];
+                            console.log(entries.length);
+                            for (let i=0;i < entries.length; i++)
+                            {
+                                if (entries[i].isDirectory )
+                                {
+                                    // i++;
+                                    console.log('aaa');
+                                    files = files.concat(await this.scanFiles(entries[i]));
+                                    console.log('bbb');
+                                    // console.log(files);
+                                    // i--;
+                                }
+                                else
+                                {
+                                    //this.filesarray.push(entry);
+                                    files.push(entries);
+                                }
+                             //   console.log(i);
+                                if (i >= entries.length-1)
+                                {
+                                    console.log(files);
+                                    resolve(files);
+                                }
+                            }
+
+
+
+
+
+                          /*
+                            for (let i=0;i < entries.length-1; i++)
+                            {
+                                (async (entry)=>
+                                {
+                                    if (entry.isDirectory )
+                                    {
+                                       // i++;
+                                        console.log('aaa');
+                                        files = files.concat(await this.scanFiles(entry));
+                                        console.log('bbb');
+                                       // console.log(files);
+                                       // i--;
+                                    }
+                                    else
+                                    {
+                                        //this.filesarray.push(entry);
+                                        files.push(entry);
+                                    }
+                                    if (i === entries.length-1)
+                                    {
+                                        console.log(files);
+                                        resolve(files);
+                                    }
+                                })(entries[i]);
+                            }*/
+/*                            entries.forEach(async (entry,index)=>{
+                                (async (entry)=>
+                                {
+                                    if (entry.isDirectory )
+                                    {
+                                        i++;
+                                        files = files.concat(await this.scanFiles(entry));
+                                        console.log(files);
+                                        i--;
+                                    }
+                                    else
+                                    {
+                                        //this.filesarray.push(entry);
+                                        files.push(entry);
+                                    }
+                                    if (index === entries.length-1)
+                                    {
+                                        console.log(files);
+                                        resolve(files);
+                                    }
+                                })(entry);
+                            });*/
+                        });
+
+                    });
+                },
+
+
+
                 portionfiles(files)
                 {
+                 //   console.log(evt.dataTransfer.items[i].webkitGetAsEntry());
                     //  console.log(files );
                     if (!files.length || files.length === 0)
                         return console.error("没有文件");
-                    let filesarray = Array.from(files);//数组化，顺便保存一份清单
+                   // let filesarray = Array.from(files);//数组化，顺便保存一份清单
+                    let filesarray = files;
                     // let md5s = [];
                     /*            this.$store.commit('storeNew',{key:'filestatus',data:[]});
                                 this.$store.commit('storeNew',{key:'fileuploading',data:[]});*/
@@ -98,7 +225,6 @@
                             this.$store.commit('storefilestatus',{key:allleng,data:'user cancel'});
                         })
                     });
-
                 },
                 calcfilemd5(resolve,reject,file,allleng)
                 {

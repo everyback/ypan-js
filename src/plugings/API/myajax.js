@@ -103,7 +103,7 @@ class ajax{
             let file = data.file;
             let datas = new FormData();
             datas.append('file',file);
-            datas.append('name', file.name);
+            datas.append('filename', file.name);
             datas.append('size', file.size);
             datas.append('md5',data.md5);
             /* if ([ 'put','post','patch'].includes(method) )
