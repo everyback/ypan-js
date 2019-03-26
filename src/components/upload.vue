@@ -1,8 +1,8 @@
 <template>
-    <div >
+    <div @dragstart="false" >
         <mu-paper v-if="isuploadBoxOpen"  class="upbox" :class="isshow? '':'upbox-min'" :z-depth	='0'>
             <mu-appbar style="width: 100%;border-radius: 0.5rem 0.5rem 0 0 "  :z-depth='0'>
-                <div slot="left">
+                <div slot="left" @dragstart="false" style="user-select: none">
                     Uploading
                 </div>
             </mu-appbar>
@@ -17,10 +17,10 @@
                     <mu-icon size="23" value="close" > </mu-icon>
                 </mu-button>
             </div>
-            <div v-if="!isshow" style="position: absolute;right: 50%;width: 150px;top:20px;font-size: 1.2rem">
+            <div v-if="!isshow" style="position: absolute;right: 50%;width: 150px;top:20px;font-size: 1.2rem;user-select: none">
                 {{numberofsuccess}}/{{countfiles}}
             </div>
-            <div  style="overflow-y:auto;width: 100%;height:380px">
+            <div  style="overflow-y:auto;width: 100%;height:380px;user-select: none" @dragstart="false" >
                 <div class="table"  style="width:98%;margin: auto">
                     <div class="table-thead"  >
                         <div class="table-row" style="height: 50px;" >
@@ -45,12 +45,12 @@
                         </div>
                     </div>
                     <div class="table-tbody" v-if="toupload">
-                        <div class="table-row" v-for="(val,index) in files.files" :key="index" style="height: 30px">
+                        <div class="table-row" v-for="(val,index) in files.files" :key=" index" style="height: 30px">
                             <div class="table-cell" style="overflow: hidden;white-space:nowrap;text-overflow:ellipsis;">
                                 {{ val.name}}
                             </div>
                             <div class="table-cell">
-                                {{Math.floor(val.size/1024/1024*100)/100 }} MB
+                                {{bytesToSize(val.size) }}
                             </div>
                             <div class="table-cell">
 
@@ -89,6 +89,7 @@
     import MuAppbar from "muse-ui/es5/AppBar/AppBar";
     import {mapGetters} from 'vuex'
     import MuPaper from "muse-ui/es5/Paper/Paper";
+    import formats from './../plugings/formats'
 
     export default {
         components: {
@@ -135,6 +136,10 @@
                 closebox()
                 {
                     this.$store.commit("storeNew",{key:"uploadBoxOpen",data:false});
+                },
+                bytesToSize(size)
+                {
+                    return formats.bytesToSize(size);
                 },
             }
 

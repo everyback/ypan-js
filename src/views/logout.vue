@@ -11,7 +11,7 @@
         beforeMount()
         {
             let url = 'auth/logout';
-            let ajax = new myajax.ajax();
+            let ajax = new myajax();
             ajax.ajax(url,{},(response)=>{
                 localStorage.clear();
                 sessionStorage.clear();

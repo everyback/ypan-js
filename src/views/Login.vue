@@ -152,9 +152,9 @@
                             sname:'password',
                         };
                         let url = 'auth/login';
-                        let ajax = new myajax.ajax();
+                        let ajax = new myajax();
                         let a = ajax.ajax(url,data,(response)=>{
-                            setTimeout(()=>{/*loading.close();*/this.$router.push('/')},1000);
+                            //setTimeout(()=>{/*loading.close();*/this.$router.push('/')},1000);
                             localStorage.setItem('login',true);
                             localStorage.setItem('user_token',response.data.access_token);
                             localStorage.setItem('exptime',response.data.expires_in);
@@ -165,8 +165,10 @@
                                 ajax.ajax(url2,data,(response)=>{
                                     localStorage.setItem('user_info',JSON.stringify(response.data));
                                     this.$store.commit('storeNew',{key:'user_info',data:response.data});
+                                    this.$router.push('/home');
                                 },(err)=>{console.log(err.response)},'post',true);
                             }
+                            this.$router.push('/home');
 
                         },(err)=>{
                            // loading.close();

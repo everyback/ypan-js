@@ -1,7 +1,9 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
+import dirpan from '@/components/pan'
 Vue.use(Router);
+import testtree from '@/components/Folder/folder'
 
 const Login = resolve('Login');
 const Mindex = resolve('Mindex');
@@ -11,10 +13,13 @@ const forgetpw_s1 = resolve('stepone',"./views/forget");
 const forgetpw_s2 = resolve('steptwo',"./views/forget");
 const forgetpw_s3 = resolve('stepthree',"./views/forget");
 const logout = resolve('logout');
+const disk = resolve('disk');
+// const dirpan = resolve('',"@components/pan");
 
 function resolve(name,fullpath = null)
 {
     let path = fullpath === null ? './views/'+ name : fullpath + '/' + name;
+   //  console.log(path);
     return resolve =>{
         import(`${path}`).then(moudle => {
             resolve(moudle)
@@ -27,18 +32,47 @@ const router = new Router({
     base: process.env.BASE_URL,
     routes: [
         {
-            path: '/',
-            alias:'home',
-            component: Home, //展示引导界面,先不做
+            path: '/index',
+            alias:'index',
+            component: Mindex, //计划做基础总和页面
         },
         {
             path: '/home',
-            alias:'home',
             component: Home,
+            children:[
+            {
+                path: '/',
+                redirect: '/home/disk',
+            },
+            {
+                path: 'disk',
+                component: disk,
+                children:[
+                    {
+                        path: 'dir/:path?',
+                        name:'dir',
+                        component: dirpan,
+                    },
+                    {
+                        path: '/',
+                        redirect: '/home/disk/dir',
+                    },
+                ],
+            },
+
+            ],
+        },
+        {
+            path: '/disk',
+            redirect: '/home/disk',
+        },
+        {
+            path: '/',
+            redirect: '/home/disk',
         },
         {
             path: '/index',
-            alias:'index',
+            name:'index',
             component: Mindex, //展示引导界面,先不做
         },
         {
@@ -55,6 +89,11 @@ const router = new Router({
             path: '/logout',
             name: 'logout',
             component: logout,
+        },
+        {
+            path: '/test',
+            name: 'test',
+            component: testtree,
         },/*
         {
             path: '/share',

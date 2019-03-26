@@ -41,7 +41,8 @@
                                     </mu-form-item>
                                 </mu-col>
                                 <mu-col span="12" class="col-top-15px  col-bottom-40px" >
-                                    <mu-button color="secondary" v-loading="loading" data-mu-loading-size="24" @click="submit" :disabled="!button" >确认</mu-button>
+                                    <!--<mu-button color="secondary" v-loading="loading" data-mu-loading-size="24" @click="submit" :disabled="!button" >确认</mu-button>-->
+                                    <mu-button color="secondary"  @click="submit" :disabled="!button" >确认</mu-button>
                                 </mu-col>
                             </mu-row>
                         </mu-col>
@@ -49,7 +50,6 @@
                 </mu-form>
             </mu-paper>
             <Mydialog :name="dialog.name" :message="dialog.msg" :open="dialog.open" :path="dialog.path" :confirm="false"> </Mydialog>
-            </mydialog>
         </mu-container>
     </div>
 </template>
@@ -151,7 +151,7 @@
                },
              //  sname:'password',
            };
-           let ajax = new myajax.ajax();
+           let ajax = new myajax();
            ajax.ajax(url,data,(response)=>{
                this.dialog = {
                    open : true,
@@ -194,7 +194,7 @@
                },
            };
            let resu = true;
-           let ajax = new myajax.ajax();
+           let ajax = new myajax();
            ajax.ajax(url,data,(response)=>{
               // console.log(response);
                //result = true;

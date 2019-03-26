@@ -17,6 +17,20 @@ let state = {
     sidebarBanName:["Login","Register","Forget","Reset"],
     user_info:{},
     login:false,
+    path:['/'],
+    count:0,
+    dir_to:"/",
+
+    selected:{
+        file:[],
+        folder:[],
+    },
+    rename:false,
+    // needselectes:false,
+
+    closedialog:false,
+    refresh:false,
+    createnewfolder:false,
 
     files:[],
     filestatus:[],
@@ -98,6 +112,50 @@ let getters = {
         }
         else
             return false;
+    },
+    fullPath(state)
+    {
+        if (state.path.length === 1)
+        {
+            return '/';
+        }
+        let arr = state.path;
+        arr = arr.filter((val)=>{
+            return !(val === "" || val === "/");
+        });
+        arr.unshift("");
+        return arr.join('/');
+
+
+    },
+    paths(state)
+    {
+        return state.path;
+    },
+    haveselected(state)
+    {
+
+        return state.selected.file.length  !== 0 || state.selected.folder.length  !== 0;
+    },
+    dialog_c(state)
+    {
+        return state.closedialog;
+    },
+    fresh(state)
+    {
+        return state.refresh;
+    },
+    cnfolder(state)
+    {
+        return state.createnewfolder;
+    },
+    isrename(state)
+    {
+        return state.rename;
+    },
+    selectsum(state)
+    {
+        return state.selected.file.length + state.selected.folder.length ;
     }
 
 };
@@ -121,13 +179,29 @@ let mutations = {
         Vue.set(state.fileuploading,datas.key,datas.data);
        // state.fileuploading[datas.key] = datas.data;
     },
-    addfilelist(state,datas)
+    addfilelist(state,data)
     {
-        state.files = state.files.concat(datas.data);
+        state.files = state.files.concat(data);
     },
     filecancel(state,datas)
     {
         Vue.set(state.filecancel,datas.key,datas.data);
+    },
+    addPath(state,data)
+    {
+        state.path = state.path.concat(data);
+    },
+    pushPath(state,data)
+    {
+        state.path.push(data);
+    },
+    popPath(state,data =1)
+    {
+        state.path.pop();
+    },
+    changePath(state,data)
+    {
+        state.path = data;
     },
 
 };

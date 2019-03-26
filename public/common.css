@@ -1,3 +1,6 @@
+:root{
+    --sidebarwidth:250px;
+}
 .showpages
 {
     position: relative;
@@ -14,9 +17,9 @@
 .showpages-sidebar-open
 {
 
-    left : calc(240px + 10px);
+    left : var(--sidebarwidth);
     /*margin-left: 1vw;*/
-    width: calc(100% - 250px );
+    width: calc(100% - var(--sidebarwidth) );
     /*margin-right: 2%;*/
     /*transition:all 0.5s ease-in-out ;*/
 }
@@ -51,7 +54,7 @@
 
 .toptitle
 {
-    width: calc(100% - 240px);
+    width: calc(100% - var(--sidebarwidth) + 10px);
     position: fixed;
     top: 0;
     right:0;
