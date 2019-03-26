@@ -16,96 +16,105 @@ class ajax{
 
     ajax(url,data,callback,errcallback = (err)=>{console.log(err.response)},method = 'get',front = true)
     {
-        if (front)
-        {
-            store.commit('storeNew',{key:"Nprogress",data:true});
-        }
-        let encrypted = {};
-        let newdatas;
-        if (data !== {})
-        {
-            if (data.secret )
+        return new Promise((resolve,reject )=>{
+            if (front)
             {
-                let jse = new JsEncrypt;
-                let pubkey = key.publickey;
-                //let pubkey = JSON.parse(localStorage.getItem("pubkey"));
-                jse.setPublicKey(decodeURIComponent(pubkey));
-                let flag = true;
-                for (let i in data.secret)
-                {
-                    encrypted[i] = jse.encrypt(data.secret[i]);
-                    flag = encrypted[i] !== false && encrypted[i] !==  '';
-                }
-                // encrypted = jse.encrypt(JSON.stringify(data.secret));
-                if (flag === false)
-                {
-                    return console.log('key不对');
-                }
+                store.commit('storeNew',{key:"Nprogress",data:true});
             }
-            if (data.secret)
+            let encrypted = {};
+            let newdatas;
+            if (data !== {})
             {
-                newdatas = Object.assign({},data.public,{secret:encrypted});
+                if (data.secret )
+                {
+                    let jse = new JsEncrypt;
+                    let pubkey = key.publickey;
+                    //let pubkey = JSON.parse(localStorage.getItem("pubkey"));
+                    jse.setPublicKey(decodeURIComponent(pubkey));
+                    let flag = true;
+                    for (let i in data.secret)
+                    {
+                        encrypted[i] = jse.encrypt(data.secret[i]);
+                        flag = encrypted[i] !== false && encrypted[i] !==  '';
+                    }
+                    // encrypted = jse.encrypt(JSON.stringify(data.secret));
+                    if (flag === false)
+                    {
+                        return console.log('key不对');
+                    }
+                }
+                if (data.secret)
+                {
+                    newdatas = Object.assign({},data.public,{secret:encrypted});
+                }
+                else if (data.public)
+                {
+                    newdatas = Object.assign({},data.public,);
+                }
+                else
+                {
+                    newdatas = Object.assign({},data,);
+                }
             }
             else
             {
-                newdatas = Object.assign({},data.public,);
+                newdatas = {};
             }
-        }
-        else
-        {
-            newdatas = {};
-        }
-        let ways = 'params';
-        if ([ 'put','post','patch'].includes(method) )
-        {
-            ways = 'data';
-        }
-        const instance = axios.create({
-            method:method,
-            baseURL: this.baseURL,
-            headers:{
-                 'Content-Type':'application/json',
-            },
-            //cancelToken: source.token,
-            timeout: 5000,
-            responseType: 'json',
-            withCredentials:true,   //加了这段就可以跨域了
-            [ways]: newdatas,
-            //data:newdatas,
-           // params:newdatas,
-        });
-        if (localStorage.getItem('user_token'))
-            instance.defaults.headers.common['Authorization'] = 'Bearer '+localStorage.getItem('user_token');
-        else
-            instance.defaults.headers.common['Authorization'] = '';
-        console.log(localStorage.getItem('user_token'));
-        axios.interceptors.response.use( (response) =>{
-            if (respose.headers.Authorization)
+            let ways = 'params';
+            if ([ 'put','post','patch'].includes(method) )
             {
-                localStorage.setItem('user_token',respose.headers.Authorization);
+                ways = 'data';
             }
-            return response;
-        },  (error)=> {
-            return Promise.reject(error);
-        });
+            const instance = axios.create({
+                method:method,
+                baseURL: this.baseURL,
+                headers:{
+                    'Content-Type':'application/json',
+                },
+                //cancelToken: source.token,
+                timeout: 10000,
+                responseType: 'json',
+                withCredentials:true,   //加了这段就可以跨域了
+                [ways]: newdatas,
+                //data:newdatas,
+                // params:newdatas,
+            });
+            if (localStorage.getItem('user_token'))
+                instance.defaults.headers.common['Authorization'] = 'Bearer '+localStorage.getItem('user_token');
+            else
+                instance.defaults.headers.common['Authorization'] = '';
+          //  console.log(localStorage.getItem('user_token'));
+            axios.interceptors.response.use( (response) =>{
+                if (respose.headers.Authorization)
+                {
+                    localStorage.setItem('user_token',respose.headers.Authorization);
+                }
+                return response;
+            },  (error)=> {
+                return Promise.reject(error);
+            });
 
-        instance(
-            url,
-            method,
-        ).then(callback,errcallback).then(()=>{
-            //console.log(process.env.VUE_APP_API_URL);
-            front ? store.commit('storeNew',{key:"Nprogress",data:true}):'';});
-        return true;
+            instance(
+                url,
+                method,
+            ).then(callback,errcallback).then(()=>{
+                //console.log(process.env.VUE_APP_API_URL);
+                front ? store.commit('storeNew',{key:"Nprogress",data:true}):'';}).then(()=>resolve());
+            return true;
+        });
     };
 
     putfile(url,data,index,callback,Progress = (e)=>{console.log((e.loaded / e.total * 100 | 0) + '%')},errcallback = (err)=>{console.log(err.response)},method = 'post')
     {
+        return new Promise((resolve,reject )=>{
             let file = data.file;
             let datas = new FormData();
             datas.append('file',file);
             datas.append('filename', file.name);
             datas.append('size', file.size);
             datas.append('md5',data.md5);
+            datas.append('slice_sha1',file.slice_sha1);
+            datas.append('dir',file.dir);
             /* if ([ 'put','post','patch'].includes(method) )
              {
                  ways = 'data';
@@ -130,12 +139,12 @@ class ajax{
                     Progress(e);
                 },
             });
-
             instance(
                 url,
                 method,
             ).then(callback,errcallback);
             return true;
+        }).then(()=>resolve());
 
     };
      choosecancel(message)
@@ -144,25 +153,5 @@ class ajax{
     };
 }
 
+export default ajax;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-export default
-{
-
-    name:'myajax',
-    store,
-    ajax,
-
-}

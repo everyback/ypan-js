@@ -1,6 +1,6 @@
 <template>
 
-    <div ref="getfile" style=" left:0;top:0;z-index: 214748364; width: 100%;height: 100% ;background-color: rgba(0,0,0,0.18);opacity: 0.8;font-size: 5rem ;padding-left: 10vw;padding-top: 20%" :class="isdrag?'hover':'none'">
+    <div ref="getfile" style="user-select: none" class="getfile" @dragenter.prevent.stop="cancel($event)"   @dragover.caputre.prevent.stop="capt($event)"  @dragleave.prevent.stop="leave($event)" @drop.prevent.stop="drop($event)" :class="isdrag?'hover':'none'">
         <!--<p ref="getfile2" style=" position: fixed;z-index: 2147;top:50%;margin: auto;margin-left:100px;margin-right:100px;font-size: 5rem">-->
         拖动至此上传文件至当前目录
         <!--</p>-->
@@ -13,8 +13,9 @@
     import SparkMD5 from 'spark-md5'
     import ajax from './../plugings/API/myajax'
     import {mapGetters} from 'vuex'
-
-
+    //import sha1 from 'crypto-js/sha1';
+    import sha1 from './../plugings/sha1'
+    import folderAPI from './../plugings/API/folderAPI'
 
     export default {
         name: "dropfiles",
@@ -22,176 +23,142 @@
         {
             return {
                 filesarray:[],
+                timer:'',
             };
-        },
-        mounted()
-        {
-            let timer;
-            this.$refs.getfile.addEventListener('dragenter',(e)=>{
-                this.cancelall(e);
-                this.$store.commit("storeNew",{key:"drag",data:true});
-            },false);
-
-            this.$refs.getfile.addEventListener("dragover",(e)=>{
-                clearTimeout(timer);
-                this.cancelall(e);
-                timer = setTimeout(()=>{
-                    this.$store.commit("storeNew",{key:"drag",data:false});
-                },1000);
-                this.$store.commit("storeNew",{key:"drag",data:true});
-            },true);
-            this.$refs.getfile.addEventListener('dragleave',(e)=>{
-                this.cancelall(e);
-                if (e.target.nodeName.toLowerCase()=== 'div')
-                    this.$store.commit("storeNew",{key:"drag",data:false});
-            },false);
-            this.$refs.getfile.addEventListener('drop',(e)=>{
-                this.cancelall(e);
-                clearTimeout(timer);
-                this.$store.commit("storeNew",{key:"drag",data:false});
-/*                console.log(e.dataTransfer.items[0].webkitGetAsEntry().createReader().readEntries((entries)=> {
-                    entries.forEach((entry)=> {
-                        console.log(entry)
-                    })}));*/
-              //  console.log(e.dataTransfer.files.webkitGetAsEntry());
-              //  console.log(e.dataTransfer.items);
-                this.fetchfile(e.dataTransfer.items);
-             //   this.portionfiles(e.dataTransfer.files);
-                return false;
-            },false);
-
-
         },
         computed:
             {
-                ...mapGetters(["isdrag","scroll"]),
+                ...mapGetters(["isdrag","scroll",'fullPath','paths']),
             },
         methods:
             {
+                cancel(e){
+                   // this.cancelall(e);
+                    if (this.$store.state.title_name === 'Home')
+                    {
+                        this.$store.commit("storeNew", {key: "drag", data: true});
+                    }
 
+                },
+                capt(e)
+                {
+                    if (this.$store.state.title_name === 'Home')
+                    {
+                        clearTimeout(this.timer);
+                        // this.cancelall(e);
+                        this.timer = setTimeout(()=>{
+                            this.$store.commit("storeNew",{key:"drag",data:false});
+                        },1000);
+                        this.$store.commit("storeNew",{key:"drag",data:true});
+                    }
+
+                },
+                leave(e)
+                {
+                    if (e.target.nodeName.toLowerCase()=== 'div')
+                        this.$store.commit("storeNew",{key:"drag",data:false});
+                },
+                drop(e)
+                {
+
+                    clearTimeout(this.timer);
+                    this.$store.commit("storeNew",{key:"drag",data:false});
+                    if(!e.dataTransfer.items[0].webkitGetAsEntry())
+                    {
+                        return false;
+                    }
+                    this.fetchfile(e.dataTransfer.items);
+                    return false;
+                },
                 fetchfile(items)
                 {
                     let files = [];
-                    (async (files)=> {
-                        for (let i=0 ;i<items.length; i++)
+                    let arrs = [];
+                    for (let i in items)
+                    {
+                        if (!isNaN(parseInt(i)))
                         {
-                            if (items[i].webkitGetAsEntry().isDirectory)
-                            {
-                                files =  files.concat(await this.scanFiles(items[i].webkitGetAsEntry()));
-                          //      console.log(files);
-                            }
-                            else
-                            {
-                                files.push(items[i].getAsFile());
-                               // this.filesarray.push(items[i].getAsFile());
-                            }
+                            arrs.push(items[i]);
                         }
+                    }
+
+                    (async ()=> {
+                        for (let i in items)
+                        {
+
+                           /* new Promise((resolve, reject) => {
+
+                            })*/
+                            console.log('start');
+
+                            if (!isNaN(parseInt(i)))
+                            {
+                                console.log(items[i].webkitGetAsEntry().isDirectory);
+                                if (items[i].webkitGetAsEntry().isDirectory)
+                                {
+                                    console.log(items[i].webkitGetAsEntry().fullPath);
+                                    this.createFolder(items[i].webkitGetAsEntry().fullPath);
+                                    console.log('before');
+                                    files = files.concat(await this.scanFiles(items[i].webkitGetAsEntry()));
+                                    console.log('after');
+                                }
+                                else
+                                {
+                                    //console.log(items[i].getAsFile());
+                                    //let file = items[i].getAsFile();
+                                    console.log(items[i]);
+                                   // file.dir_path = fullPath;
+                                    //files.push(file.dir_path);
+                                    /*                                sha1.sha1File(items[i].getAsFile()).then((resolve)=>{
+                                                                        console.log(resolve);
+                                                                    })*/
+                                }
+                            }
+
+                        }
+
                         console.log(files);
-                      //  this.portionfiles(files);
-                    })(files);
+
+                        //this.portionfiles(files);
+                    })();
                 },
 
                 scanFiles(item)
                 {
-                    //console.log(files);
-                    // 要发送一个建立文件夹信息
-                    //   nowpath   +item.fullpath
-
                     return new Promise( (resolve)=> {
                         let files = [];
                         let reader = item.createReader();
-                        let promises = [];
-                       // let i = 0;
-                        reader.readEntries(async (entries)=>{
-                         //   let files = [];
-                            console.log(entries.length);
-                            for (let i=0;i < entries.length; i++)
+                        reader.readEntries(async (entries)=> {
+                            for (let i = 0; i < entries.length; i++)//换成同步写法，不然导致异步更恶心
                             {
-                                if (entries[i].isDirectory )
-                                {
-                                    // i++;
-                                    console.log('aaa');
+                                if (entries[i].isDirectory) {
+                                    //这边要获取path进行上传
+                                    this.createFolder(entries[i].fullPath);
+                                    console.log(entries[i].fullPath);
+                                    //console.log(entries[i].webkitGetAsEntry().fullPath);
                                     files = files.concat(await this.scanFiles(entries[i]));
-                                    console.log('bbb');
-                                    // console.log(files);
-                                    // i--;
                                 }
-                                else
-                                {
-                                    //this.filesarray.push(entry);
-                                    files.push(entries);
-                                }
-                             //   console.log(i);
-                                if (i >= entries.length-1)
-                                {
-                                    console.log(files);
-                                    resolve(files);
+                                else {
+                                    new Promise(resolve2 => {
+                                        entries[i].file( async( file)=> {
+                                            file.fullPath = entries[i].fullPath;
+                                            files.push(file);
+                                            if (i >= entries.length -1)
+                                            {
+                                                resolve2();
+                                                resolve(files);
+                                            }
+                                        });
+                                    });
                                 }
                             }
-
-
-
-
-
-                          /*
-                            for (let i=0;i < entries.length-1; i++)
-                            {
-                                (async (entry)=>
-                                {
-                                    if (entry.isDirectory )
-                                    {
-                                       // i++;
-                                        console.log('aaa');
-                                        files = files.concat(await this.scanFiles(entry));
-                                        console.log('bbb');
-                                       // console.log(files);
-                                       // i--;
-                                    }
-                                    else
-                                    {
-                                        //this.filesarray.push(entry);
-                                        files.push(entry);
-                                    }
-                                    if (i === entries.length-1)
-                                    {
-                                        console.log(files);
-                                        resolve(files);
-                                    }
-                                })(entries[i]);
-                            }*/
-/*                            entries.forEach(async (entry,index)=>{
-                                (async (entry)=>
-                                {
-                                    if (entry.isDirectory )
-                                    {
-                                        i++;
-                                        files = files.concat(await this.scanFiles(entry));
-                                        console.log(files);
-                                        i--;
-                                    }
-                                    else
-                                    {
-                                        //this.filesarray.push(entry);
-                                        files.push(entry);
-                                    }
-                                    if (index === entries.length-1)
-                                    {
-                                        console.log(files);
-                                        resolve(files);
-                                    }
-                                })(entry);
-                            });*/
                         });
-
                     });
                 },
 
-
-
                 portionfiles(files)
                 {
-                 //   console.log(evt.dataTransfer.items[i].webkitGetAsEntry());
-                    //  console.log(files );
+
                     if (!files.length || files.length === 0)
                         return console.error("没有文件");
                    // let filesarray = Array.from(files);//数组化，顺便保存一份清单
@@ -205,7 +172,7 @@
                     if (this.$store.state.files[0])
                     {
                         alllength = this.$store.state.files.length;
-                        this.$store.commit('addfilelist',{key:'files',data:filesarray});
+                        this.$store.commit('addfilelist',filesarray);
                     }
                     else
                     {
@@ -228,7 +195,7 @@
                 },
                 calcfilemd5(resolve,reject,file,allleng)
                 {
-
+                    console.time('aaa');
                     function calcing(resolve2,reject2,file,cancel) {
                         const chunkSize = 5*(8*1024*1024);              //8*1024*1024*5              // Read in chunks of 2MB
                         let chunks = Math.ceil(file.size / chunkSize);
@@ -246,6 +213,7 @@
                                 loadNext();
                             } else {
                                 md5 = spark.end();
+                                console.timeEnd('aaa');
                                 resolve2(md5);
                             }
                         };
@@ -311,14 +279,48 @@
                     )
 
                 },
-                cancelall(e)
+
+                createFolder(pathname)
                 {
-                    e.preventDefault();
-                    e.cancelBubble = true;
-                    e.stopPropagation();
+                    /*let folder = new folderAPI();
+                    folder.createFolder(pathname);*/
+
                 }
 
 
+                /*createFolder(pathname)
+                {
+                    let dir = this.paths;
+                    let path = pathname.split("/");
+                    path = path.filter((val)=>{
+                        return !(val === "" || val === "/");
+                    });
+                    let name = path.pop();
+                    dir = dir.filter((val)=>{
+                        return !(val === "" || val === "/");
+                    });
+                    dir.unshift("");
+                    if (this.$store.state.path.length === 1)
+                    {
+                        dir = "/" + path.join("/");
+                    }
+                    else if (path.length <= 1)
+                    {
+                        dir = dir.join('/') ;
+                    }
+                    else
+                    {
+                        dir = dir.join('/') + "/" + path.join("/");
+                    }
+                    let folder_name = name;
+                    let create = new ajax.ajax();
+                    let url = "folder/create";
+                    create.ajax(url,{dir,folder_name},(respone)=>{
+                        console.log(respone);
+                    },(err)=>{
+                        console.log(err.respone);
+                    },'post');
+                }*/
             }
 
     }
@@ -334,6 +336,75 @@
         display:none;
         position: fixed;
     }
+    .getfile{
+        left:0;
+        top:0;
+        z-index: 214748364;
+        width: 100%;
+        height: 100% ;
+        background-color: rgba(0,0,0,0.18);
+        opacity: 0.8;
+        font-size: 5rem ;
+        padding-left: 10vw;
+        padding-top: 20%;
+    }
 
 
 </style>
+
+
+
+<!--
+
+
+
+
+                          /*
+                            for (let i=0;i < entries.length-1; i++)
+                            {
+                                (async (entry)=>
+                                {
+                                    if (entry.isDirectory )
+                                    {
+                                       // i++;
+                                        console.log('aaa');
+                                        files = files.concat(await this.scanFiles(entry));
+                                        console.log('bbb');
+                                       // console.log(files);
+                                       // i--;
+                                    }
+                                    else
+                                    {
+                                        //this.filesarray.push(entry);
+                                        files.push(entry);
+                                    }
+                                    if (i === entries.length-1)
+                                    {
+                                        console.log(files);
+                                        resolve(files);
+                                    }
+                                })(entries[i]);
+                            }*/
+/*                            entries.forEach(async (entry,index)=>{
+                                (async (entry)=>
+                                {
+                                    if (entry.isDirectory )
+                                    {
+                                        i++;
+                                        files = files.concat(await this.scanFiles(entry));
+                                        console.log(files);
+                                        i--;
+                                    }
+                                    else
+                                    {
+                                        //this.filesarray.push(entry);
+                                        files.push(entry);
+                                    }
+                                    if (index === entries.length-1)
+                                    {
+                                        console.log(files);
+                                        resolve(files);
+                                    }
+                                })(entry);
+                            });*/
+-->

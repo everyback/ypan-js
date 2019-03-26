@@ -30,7 +30,11 @@
             confirm:{
                 type:null,
                 default:false,
-            }
+            },
+            action:{
+                type:Function,
+                default:()=>{},
+            },
 
         },
         data()
@@ -63,6 +67,7 @@
                 closedialog(path = undefined)
                 {
                     //console.log(path);
+                    this.action();
                     this.dialog.open = false;
                     !!path  ? this.$router.push(path):'';
                 },

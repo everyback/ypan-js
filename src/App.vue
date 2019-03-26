@@ -3,10 +3,10 @@
       <sidebar />
       <titles  v-show="titleShow"/>
       <div class="showpages" :class="this.$store.state.sidebarOpen? 'showpages-sidebar-open':'showpages-sidebar-close'" >
-          <div :class="this.$store.state.sidebarOpen? 'inner-showpages-sidebar-open':'inner-showpages-sidebar-close'" style="min-height: calc(100vh - 70px)">
+          <div :class="this.$store.state.sidebarOpen? 'inner-showpages-sidebar-open':'inner-showpages-sidebar-close'" style="min-height: calc(100vh - 124px)">
                 <router-view/>
           </div>
-          <footer style="margin-top: 10px"> This is foot </footer>
+          <footer style="margin-top: 5px;user-select: none"> This is foot </footer>
       </div>
   </div>
 </template>
@@ -75,13 +75,30 @@
         mounted()
         {
             this.$refs.root.addEventListener('dragenter',(e)=>{
+           /* if (e.dataTransfer.items[0].webkitGetAsEntry())
+            {*/
                 e.cancelBubble = true;
                 e.preventDefault();
                 e.stopPropagation();
-                 this.$store.commit("storeNew",{key:"drag",data:true});
+                this.$store.commit("storeNew",{key:"drag",data:true});
+         //   }
+
              //   console.log("catched");
                 }
+                ,false);
+            this.$refs.root.addEventListener('dragstart',(e)=>{
+
+                    return false;
+                    e.cancelBubble = true;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.$store.commit("storeNew",{key:"drag",data:true});
+                    //   console.log("catched");
+                }
                 ,true);
+            document.addEventListener('dragstart',(e)=> {
+                return false;
+            });
            // this.$refs.getfile.addEventListener('dragover',(e)=>this.$store.commit("storeNew",{key:"drag",data:true}),false);
 /*            this.$refs.root.addEventListener('dragleave',(e)=>{
                 e.cancelBubble = true;
@@ -117,7 +134,7 @@
 </script>
 
 <style>
-    @import 'http://cdn.bootcss.com/material-design-icons/3.0.1/iconfont/material-icons.css';
+    @import 'https://cdn.bootcss.com/material-design-icons/3.0.1/iconfont/material-icons.min.css';
     @import "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic";
 
     #app {
