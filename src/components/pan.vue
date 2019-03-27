@@ -283,10 +283,12 @@
                 this.refreshing = true;
                 sessionStorage.removeItem(this.getpath());
                 this.page = 1;
-                this.listfile(1).then(()=>{
+                this.listfile(1).then((result)=>{
                     this.refreshing = false;
                     this.end = false;
                   //  this.page = 1;
+                },(reject)=>{
+                    this.refreshing = false;
                 });
 
             },
@@ -370,7 +372,8 @@
                    }
 
                }).then(()=>{
-                   this.selects = Array(this.datas.length).fill(false);
+                   let lens = this.datas.length - this.selects.length;
+                   this.selects = this.selects.concat(Array(lens).fill(false));
                });
 
             },

@@ -72,7 +72,7 @@ class ajax{
                     'Content-Type':'application/json',
                 },
                 //cancelToken: source.token,
-                timeout: 10000,
+                timeout: 100000,
                 responseType: 'json',
                 withCredentials:true,   //加了这段就可以跨域了
                 [ways]: newdatas,
@@ -112,9 +112,9 @@ class ajax{
             datas.append('file',file);
             datas.append('filename', file.name);
             datas.append('size', file.size);
-            datas.append('md5',data.md5);
+            datas.append('md5',file.md5);
             datas.append('slice_sha1',file.slice_sha1);
-            datas.append('dir',file.dir);
+            datas.append('dir',file.path);
             /* if ([ 'put','post','patch'].includes(method) )
              {
                  ways = 'data';
@@ -123,9 +123,7 @@ class ajax{
                 method:method,
                 baseURL: this.baseURL ,
                 headers:{
-                    // 'Content-Type':'application/x-www-form-urlencoded ',
                     'Content-Type':'multipart/form-data'
-                    // 'Content-Type':'application/json',
                 },
                 //cancelToken: source.token,
                 timeout: 1000000000,

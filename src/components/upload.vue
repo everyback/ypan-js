@@ -62,7 +62,7 @@
                                 {{ files.filestatus[index]}}
                             </div>
                             <div class="table-cell">
-                                <div v-if="files.filestatus[index] !== 'success' && files.filestatus[index] !== 'failed'&&  files.filestatus[index] !== 'user cancel'">
+                                <div v-if="  !['success','failed','user cancel','unknow error'].includes(files.filestatus[index]) ">
                                     <mu-button icon  small color="primary">
                                         <mu-icon size="15" value="pause" > </mu-icon>
                                     </mu-button>
@@ -70,7 +70,7 @@
                                         <mu-icon size="15" value="close" > </mu-icon>
                                     </mu-button>
                                 </div>
-                                <div v-else-if=" files.filestatus[index] === 'success' ">
+                                <div v-else-if=" ['success','success,by quick'].includes(files.filestatus[index]) || file.filestatus[index].indexOf('by quick') !== -1  ">
                                         <mu-icon size="15" value="check" color="green"> </mu-icon>
                                 </div>
                                 <div v-else-if=" files.filestatus[index] === 'user cancel' ">

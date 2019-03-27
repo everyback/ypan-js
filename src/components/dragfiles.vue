@@ -74,21 +74,22 @@
                 {
                     let files = [];
                     let arrs = [];
-                    for (let i in items)
+           /*         for (let i in items)
                     {
                         if (!isNaN(parseInt(i)))
                         {
                             arrs.push(items[i]);
                         }
-                    }
+                    }*/
 
-                    (async ()=> {
+
+                    //console.log(items instanceof Array);
+
+                    console.log(items[0].webkitGetAsEntry());
+                 /*   (async ()=> {
+                        let pro = [];
                         for (let i in items)
                         {
-
-                           /* new Promise((resolve, reject) => {
-
-                            })*/
                             console.log('start');
 
                             if (!isNaN(parseInt(i)))
@@ -105,13 +106,13 @@
                                 else
                                 {
                                     //console.log(items[i].getAsFile());
-                                    //let file = items[i].getAsFile();
-                                    console.log(items[i]);
+                                    let file = items[i].getAsFile();
+                                    //console.log(items[i]);
                                    // file.dir_path = fullPath;
-                                    //files.push(file.dir_path);
-                                    /*                                sha1.sha1File(items[i].getAsFile()).then((resolve)=>{
+                                    files.push(file.dir_path);
+                                    /!*                                sha1.sha1File(items[i].getAsFile()).then((resolve)=>{
                                                                         console.log(resolve);
-                                                                    })*/
+                                                                    })*!/
                                 }
                             }
 
@@ -120,7 +121,7 @@
                         console.log(files);
 
                         //this.portionfiles(files);
-                    })();
+                    })();*/
                 },
 
                 scanFiles(item)

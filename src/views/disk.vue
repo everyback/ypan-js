@@ -11,7 +11,7 @@
                                    <mu-list-item-title> UPLOAD FILE</mu-list-item-title>
                                </mu-list-item>
                                <mu-list-item button>
-                                   <input @dragstart="false" title="点击选择文件" id="h5Input1" multiple accept="*/*" type="file" webkitdirectory mozdirectory name="html5uploader" style="position:absolute;opacity:0;top:0;left:0;width:100%;height:100%;cursor:pointer;">
+                                   <input @dragstart="false" title="点击选择文件" id="h5Input1" multiple accept="*/*" type="file" webkitdirectory mozdirectory name="html5uploader" style="position:absolute;opacity:0;top:0;left:0;width:100%;height:100%;cursor:pointer;"  @change="getfolder($event)">
                                    <mu-list-item-title> UPLOAD FOLDER</mu-list-item-title>
                                </mu-list-item>
                            </mu-list>
@@ -63,6 +63,8 @@
     import FolderAPI from '../plugings/API/folderAPI'
     import FileAPI from '../plugings/API/fileAPI'
     import MyDialog from "../components/myDialog";
+    import md5 from "../plugings/md5"
+    import sha1 from "../plugings/sha1"
 
     export default {
         components: {
@@ -100,7 +102,7 @@
             });*/
         },
         computed:{
-            ...mapGetters(['fullPath',"haveselected","selectsum"]),
+            ...mapGetters(['fullPath',"haveselected","selectsum","files"]),
             key() {
                 return this.$route.name !== undefined? this.$route.name +new Date(): this.$route +new Date()
             },
@@ -260,7 +262,64 @@
                 {
                     this.$store.commit("storeNew",{key:"rename",data:true});
                 },
+                getfolder(event)
+                {
+                    console.log(Array.from(event.target.files) );
+                    let list = Array.from(event.target.files);
 
+                    if (!list.length || list.length === 0)
+                        return console.error("没有文件");
+                    let alllength = 0;
+                    this.$store.commit("storeNew",{key:"uploadBoxOpen",data:true});
+
+                    if (this.$store.state.files[0])//添加文件列表
+                    {
+                        alllength = this.$store.state.files.length;//旧长度
+                        this.$store.commit('addfilelist',list);
+                    }
+                    else
+                    {
+                        this.$store.commit('storeNew',{key:'files',data:list});
+                    }
+
+                    let dir =  this.fullPath;
+                    if (dir === "/" )
+                    {
+                        dir = "";
+                    }
+                    list.forEach(async (value,index)=>{
+                        let allleng = alllength+index;
+                        this.$store.commit('filecancel',{key:allleng,data:false});
+                        try{
+                            //console.log(value.webkitRelativePath.lastIndexOf("/"));
+                            value.path = dir + "/" + value.webkitRelativePath.slice(0,value.webkitRelativePath.lastIndexOf("/"));
+                            this.$store.commit('storefilestatus',{key:allleng,data:'calc md5'});
+                            value.md5 = await md5.calcfilemd5(value,allleng);
+                            this.$store.commit('storefilestatus',{key:allleng,data:'calc sha1'});
+                            value.silce_sha1 = await sha1.sha1File(value);
+                            this.$store.commit('storefilestatus',{key:allleng,data:'waiting upload'});
+                            FileAPI.uploadfile(value,allleng);
+                        }
+                        catch(err)
+                        {
+                            console.log(err.message);
+                            if (err.message.indexOf("user") !== -1)
+                            {
+                                this.$store.commit('storefilestatus',{key:allleng,data:err.message});
+                            }
+                            return 1;
+                        }
+                        }
+                    );
+
+
+
+
+
+                   /* md5.calcfilemd5(event.target.files[0],0).then((result)=>{
+                       console.log(result);
+                    });*/
+                }
             }
     }
 </script>
