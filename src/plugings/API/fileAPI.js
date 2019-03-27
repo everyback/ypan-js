@@ -65,7 +65,6 @@ class fileAPI{
                 console.log(err.response);
                 reject();
             },'post')
-
         });
     };
 
@@ -228,15 +227,21 @@ class fileAPI{
                 )
             }
         } );
-
-
-
     }
 
-
-    static rename()
+    static rename(oldname,newname,dir)
     {
-
+        return new Promise((resolve,reject)=>{
+            let url = 'file/rename';
+            let ajax = new myajax();
+            ajax.ajax(url,{filename:oldname,new_filename:newname,dir},(response)=>{
+                console.log(response);
+                resolve();
+            },(err)=>{
+                console.log(err.response);
+                reject();
+            },'post')
+        });
     }
 
 }

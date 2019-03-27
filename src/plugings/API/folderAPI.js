@@ -73,6 +73,21 @@ class folderAPI{
 
         });
     }
+    static rename(oldname,newname,dir)
+    {
+        return new Promise((resolve,reject)=>{
+            let url = 'folder/rename';
+            let ajax = new myajax();
+            ajax.ajax(url,{folder_name:oldname,new_foldername:newname,dir},(response)=>{
+                console.log(response);
+                resolve();
+            },(err)=>{
+                console.log(err.response);
+                reject();
+            },'post',)
+
+        });
+    }
 
 
 

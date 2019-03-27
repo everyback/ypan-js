@@ -30,7 +30,7 @@
                         </span>
                         <span class="text-left in-block filename-width">
                             <mu-icon class="icon" size="24" value="folder" color="amber200"  />
-                            <mu-text-field class="left-margin phone" v-model="newfolder_name" placeholder="please input folder name" > </mu-text-field>
+                            <mu-text-field class="left-margin phone" v-model="new_name" placeholder="please input folder name" > </mu-text-field>
                             <mu-button icon color="success" small class="name-button" @click="createfolder()">
                             <mu-icon value="done" />
                             </mu-button>
@@ -58,11 +58,11 @@
                                     <router-link class="left-margin" ondragstart="return false"  :to="{ name: 'dir', query: { path: fullPath+'/'+ value.folder_name }}">{{value.folder_name}}</router-link>
                                 </span>
                                 <span class="text-left in-block filename-width"  v-else>
-                                    <mu-text-field class="left-margin phone" v-model="newfolder_name" :placeholder="value.folder_name" />
-                                    <mu-button icon color="success" small class="name-button" @click="createfolder()">
+                                    <mu-text-field class="left-margin phone" v-model="new_name" :placeholder="value.folder_name" />
+                                    <mu-button icon color="success" small class="name-button" @click="torename()">
                                         <mu-icon value="done" />
                                     </mu-button>
-                                    <mu-button icon color="error" small class="name-button" @click="cancelcreate()">
+                                    <mu-button icon color="error" small class="name-button" @click="cancelrename()">
                                         <mu-icon value="clear" />
                                     </mu-button>
                                 </span>
@@ -81,11 +81,11 @@
                                     <span > {{value.file_name}} </span>
                                 </span>
                                 <span class="text-left in-block filename-width"  v-else>
-                                    <mu-text-field class="left-margin phone" v-model="newfolder_name" :placeholder="value.file_name" />
-                                    <mu-button icon color="success" small class="name-button" @click="createfolder()">
+                                    <mu-text-field class="left-margin phone" v-model="new_name" :placeholder="value.file_name" />
+                                    <mu-button icon color="success" small class="name-button" @click="torename()">
                                         <mu-icon value="done" />
                                     </mu-button>
-                                    <mu-button icon color="error" small class="name-button" @click="cancelcreate()">
+                                    <mu-button icon color="error" small class="name-button" @click="cancelrename()">
                                         <mu-icon value="clear" />
                                     </mu-button>
                                 </span>
@@ -101,11 +101,11 @@
                                     <mu-icon value="cloud_download" />
                                 </mu-button>
                                 <mu-menu placement="top-start" :open.sync="openlist" >
-                                    <mu-button icon color="error" small class="name-button" @click="cancelcreate()">
+                                    <mu-button icon color="error" small class="name-button" >
                                         <mu-icon value="more_vert" />
                                     </mu-button>
                                     <mu-list slot="content" >
-                                        <mu-list-item button>
+                                        <mu-list-item button @click="prename(index)">
                                            <mu-list-item-title> RENAME</mu-list-item-title>
                                         </mu-list-item>
                                             <mu-list-item button>
@@ -137,6 +137,7 @@
     import myajax from './../plugings/API/myajax'
     import formats from './../plugings/formats'
     import FolderAPI from '../plugings/API/folderAPI'
+    import FileAPI from '../plugings/API/fileAPI'
 
     export default {
 
@@ -152,7 +153,7 @@
                 datas:[],
                 selects:[],
                 all:0,
-                newfolder_name:'',
+                new_name:'',
                 test:false,
                 end:false,
                 firstin:true,
@@ -160,7 +161,7 @@
                 over:false,
                 openlist:false,
                 hoverindex:-1,
-                rename: [],
+                // rename: [],
                 selectrename :-1,
 
             }
@@ -248,6 +249,7 @@
             {
                 if (val)
                 {
+                    this.cancelrename();
                     this.listfile(1,this.getpath());
                     this.$store.commit("storeNew",{key:"refresh",data:false});
                     this.end = false;
@@ -283,6 +285,7 @@
                 this.refreshing = true;
                 sessionStorage.removeItem(this.getpath());
                 this.page = 1;
+                this.cancelrename();
                 this.listfile(1).then((result)=>{
                     this.refreshing = false;
                     this.end = false;
@@ -372,8 +375,16 @@
                    }
 
                }).then(()=>{
-                   let lens = this.datas.length - this.selects.length;
-                   this.selects = this.selects.concat(Array(lens).fill(false));
+                   if (page === 1)
+                   {
+
+                       this.selects = Array(this.datas.length).fill(false);
+                   }
+                   else {
+                       let lens = this.datas.length - this.selects.length;
+                       this.selects = this.selects.concat(Array(lens).fill(false));
+                   }
+
                });
 
             },
@@ -420,11 +431,11 @@
             },
             createfolder()
             {
-                let foldername = this.newfolder_name;
+                let foldername = this.new_name;
                 let dir = this.fullPath;
                 FolderAPI.createfile(foldername,dir).then((resolve)=>{
                     this.$store.commit("storeNew",{key:'createnewfolder',data:false});
-                    this.newfolder_name = '';
+                    this.new_name = '';
                     sessionStorage.removeItem(dir);
                     this.listfile(1);
                 },(reject)=>{
@@ -434,7 +445,7 @@
             cancelcreate()
             {
                 this.$store.commit("storeNew",{key:'createnewfolder',data:false});
-                this.newfolder_name = '';
+                this.new_name = '';
             },
             to(filename)
             {
@@ -485,6 +496,53 @@
             {
                 this.openlist = false;
                 this.hoverindex = -1 ;
+            },
+            torename ()
+            {
+                let sels = this.selectrename;
+                let newname = this.new_name;
+                if (this.datas[sels].is_file === false)
+                {
+                    let oldname = this.datas[sels].folder_name;
+                    FolderAPI.rename(oldname,newname,this.fullPath).then((resolve)=>{
+                        this.new_name = '';
+                        sessionStorage.removeItem(this.fullPath);
+                        this.listfile(1);
+                        this.cancelrename();
+                    },(reject)=>{
+                        console.log(reject);
+                    }).then(()=>this.$store.commit("storeNew",{key:"rename",data:false}));
+                }
+                else
+                {
+                    let oldname = this.datas[sels].file_name;
+                    FileAPI.rename(oldname,newname,this.fullPath).then((resolve)=>{
+                        this.new_name = '';
+                        sessionStorage.removeItem(this.fullPath);
+                        this.listfile(1);
+                        this.cancelrename();
+                    },(reject)=>{
+                        console.log(reject);
+                    }).then(()=>this.$store.commit("storeNew",{key:"rename",data:false}));
+                }
+
+            },
+            cancelrename()
+            {
+                this.selectrename = -1;
+                this.new_name = '';
+                this.$store.commit("storeNew",{key:"rename",data:false});
+            },
+            prename(index = -1)
+            {
+                if(index !== -1)
+                {
+                    this.selectrename = index;
+                }
+                this.openlist = false;
+                this.new_name = '';
+
+                this.$store.commit("storeNew",{key:"rename",data:true});
             }
         }
     }

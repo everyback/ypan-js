@@ -7,11 +7,11 @@
                            <mu-button color="primary">UPLOAD</mu-button>
                            <mu-list slot="content">
                                <mu-list-item button>
-                                   <input @dragstart="false" title="点击选择文件" id="h5Input0" multiple  accept="*/*" type="file" name="html5uploader" style="position:absolute;opacity:0;top:0;left:0;width:100%;height:100%;cursor:pointer;">
+                                   <input @dragstart="false" title="点击选择文件" id="h5Input0" multiple  accept="*/*" type="file" name="html5uploader" style="position:absolute;opacity:0;top:0;left:0;width:100%;height:100%;cursor:pointer;" ref="file" @change="getfolder($event)">
                                    <mu-list-item-title> UPLOAD FILE</mu-list-item-title>
                                </mu-list-item>
                                <mu-list-item button>
-                                   <input @dragstart="false" title="点击选择文件" id="h5Input1" multiple accept="*/*" type="file" webkitdirectory mozdirectory name="html5uploader" style="position:absolute;opacity:0;top:0;left:0;width:100%;height:100%;cursor:pointer;"  @change="getfolder($event)">
+                                   <input @dragstart="false" title="点击选择文件" id="h5Input1" multiple accept="*/*" type="file" webkitdirectory mozdirectory name="html5uploader" style="position:absolute;opacity:0;top:0;left:0;width:100%;height:100%;cursor:pointer;" ref="folder"  @change="getfolder($event)">
                                    <mu-list-item-title> UPLOAD FOLDER</mu-list-item-title>
                                </mu-list-item>
                            </mu-list>
@@ -311,15 +311,17 @@
                         }
                         }
                     );
+                    this.$refs.folder.value = null;
+                    this.$refs.file.value = null;
+                },
 
-
-
-
-
-                   /* md5.calcfilemd5(event.target.files[0],0).then((result)=>{
-                       console.log(result);
-                    });*/
+/*
+                getfile($event)
+                {
+                    console.log($event);
                 }
+*/
+
             }
     }
 </script>
