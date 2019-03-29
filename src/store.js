@@ -20,6 +20,13 @@ let state = {
     path:['/'],
     count:0,
     dir_to:"/",
+    r_map:[],
+    role:false,
+    sidebar_items:[
+        {name:"disk",path:"/home/disk"},
+        {name:"share",path:"/share"},
+        {name:"my",path:"/my"},
+    ],
 
     selected:{
         file:[],
@@ -156,6 +163,13 @@ let getters = {
     selectsum(state)
     {
         return state.selected.file.length + state.selected.folder.length ;
+    },
+    spaceused(state)
+    {
+        if (state.user_info !== {})
+            return  (state.user_info.space_used/ state.user_info.space).toFixed(4);
+        else
+            return 0.0000;
     }
 
 };
@@ -203,6 +217,10 @@ let mutations = {
     {
         state.path = data;
     },
+    pushname(state,data)
+    {
+        state.sidebar_items = state.sidebar_items.concat(data);
+    }
 
 };
 

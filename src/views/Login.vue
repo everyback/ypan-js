@@ -186,7 +186,8 @@
                             }
                             else
                             {
-                                this.$router.push('/');
+                                this.errs.username = '服务器未知错误，请稍后重试';
+                                //this.$router.push('/');
                             }
                         },'post',true);
 

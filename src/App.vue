@@ -70,7 +70,7 @@
             {
                 this.$store.commit("storeNew",{key:'user_info',data:JSON.parse(localStorage.getItem('user_info'))})
             }
-
+            sessionStorage.setItem("role",false);
         },
         mounted()
         {

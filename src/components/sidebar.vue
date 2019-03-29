@@ -30,11 +30,14 @@
                             <div style="width: calc(100% ); height: calc(100% - 12rem); ">
                                 <mu-list>
                                     <!--<mu-list-item  v-if="!bigscreen" @click="closebar()" button>-->
-                                    <mu-list-item  @click="closebar()" button>
+                                  <!--  <mu-list-item  @click="closebar()" button>
                                         <mu-list-item-title>1</mu-list-item-title>
                                     </mu-list-item>
                                     <mu-list-item  @click="closebar()" button>
                                         <mu-list-item-title>2</mu-list-item-title>
+                                    </mu-list-item>-->
+                                    <mu-list-item button v-for="(items,index) in this.$store.state.sidebar_items" @click="pushto(items) " :key="index">
+                                        <mu-list-item-title>{{items.name}}</mu-list-item-title>
                                     </mu-list-item>
 
 
@@ -55,12 +58,15 @@
                             </div>
                         </div>
                     </div>
+
                     <!-- <mu-appbar style="position: absolute;bottom: 0;width: 100% "  z-depth="0">
 
                      </mu-appbar>-->
-                    <mu-appbar style="order: 99;width: 100%"  z-depth="0">
-
-                    </mu-appbar>
+                    <div style="order: 99;width: 100%;background-color: whitesmoke;height:3rem" >
+                        <div style="  margin-top:-10px;margin-left: 20px">
+                           <space />
+                        </div>
+                    </div>
                 </div>
             </mu-drawer>
         </mu-container>
@@ -73,12 +79,14 @@
 
     import Mydialog from "../components/myDialog";
     import {mapActions, mapGetters} from 'vuex'
+    import Space from "./space";
 
 
     export default {
         name: "sidebar",
         components: {
-           Mydialog,
+            Space,
+            Mydialog,
         },
         data(){
             return {
@@ -105,6 +113,7 @@
         },
         computed :{
             ...mapGetters(["bigscreen","islogin","barOpen","userInfo"]),
+
         },
         watch:{
             bigscreen(val){
@@ -157,6 +166,7 @@
                 this.user.name = s.name;
                 this.user.uid  = s.id;
             }
+            //console.log(this.spaceused);
         },
         methods:{
             closebar()
@@ -178,6 +188,10 @@
             jumpto(val)
             {
                 this.$store.commit('storeNew',{key:'title_name',data:val.name});
+            },
+            pushto(items)
+            {
+                this.$router.push(items.path);
             },
             sleft(s)
             {

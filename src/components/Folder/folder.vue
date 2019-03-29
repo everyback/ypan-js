@@ -78,7 +78,7 @@
         },
         mounted()
         {
-            console.log(this.res);
+            //console.log(this.res);
 
         },
         computed:

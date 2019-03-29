@@ -2,8 +2,10 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
 import dirpan from '@/components/pan'
+import store from './store'
 Vue.use(Router);
 import testtree from '@/components/Folder/folder'
+import getrole from "@/plugings/API/getrolerouter"
 
 const Login = resolve('Login');
 const Mindex = resolve('Mindex');
@@ -129,28 +131,33 @@ const router = new Router({
     ]
 });
 
-/*router.beforeEach((to, from, next) => {
+router.beforeEach((to, from, next) => {
 
-    if (localStorage.getItem('user'))
+
+    /* {
+       let map = JSON.parse(sessionStorage.getItem('maps'));
+       store.commit('newmap',map);
+       router.addRoutes(map);
+     }*/
+     console.log(!sessionStorage.getItem("role"));
+    if (to.path !== from.path && sessionStorage.getItem("role") === "false")
     {
-
-        if (!sessionStorage.getItem('map'))
-        {
-            const url = 'showroutes';
-            myajax.ajax(url,{},(response)=>{
-                console.log(response.data.success);
-                const way = response.data.success;
-                sessionStorage.setItem('map',JSON.stringify(way));
-            },(err)=>{console.log(err.response)},'get',false);
-        }
-
+        getrole.getrolemap().then((resolve)=>{
+            if (resolve !== 0)
+            {
+                router.addRoutes(resolve);
+            }
+        });
     }
+
+
     if (to.path === '/login')
     {
+
         next();
     }
     next();
-});*/
+});
 
 export default router;
 
