@@ -4,7 +4,9 @@
       <titles  v-show="titleShow"/>
       <div class="showpages" :class="this.$store.state.sidebarOpen? 'showpages-sidebar-open':'showpages-sidebar-close'" >
           <div :class="this.$store.state.sidebarOpen? 'inner-showpages-sidebar-open':'inner-showpages-sidebar-close'" style="min-height: calc(100vh - 124px)">
-                <router-view/>
+              <transition appear  name="fadeUp" mode="out-in"  leave-active-class="fadeDown-leave-active" :duration="500"  >
+                <router-view style="animation-duration:0.5s;"   />
+              </transition>
           </div>
           <footer style="margin-top: 5px;user-select: none"> This is foot </footer>
       </div>
@@ -16,6 +18,7 @@
     import Sidebar from "./components/sidebar"
     import titles from "./components/titles"
     import {mapGetters} from 'vuex'
+
 
     export default {
         store,
@@ -76,11 +79,14 @@
         {
             this.$refs.root.addEventListener('dragenter',(e)=>{
            /* if (e.dataTransfer.items[0].webkitGetAsEntry())
-            {*/
-                e.cancelBubble = true;
-                e.preventDefault();
-                e.stopPropagation();
-                this.$store.commit("storeNew",{key:"drag",data:true});
+            {*/if (this.$route.path === "/home/disk/dir")
+                {
+                    e.cancelBubble = true;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.$store.commit("storeNew",{key:"drag",data:true});
+                }
+
          //   }
 
              //   console.log("catched");

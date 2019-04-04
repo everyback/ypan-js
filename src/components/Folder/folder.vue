@@ -1,5 +1,5 @@
 <template>
-    <mu-dialog :width="700" :open.sync="dialog.open">
+    <mu-dialog :width="700" :open.sync="open">
         <P>当前选定位置:{{this.$store.state.dir_to}}</P>
         <div class="india">
             <ul>
@@ -23,9 +23,6 @@
                             <tree v-if="selects[index]" :folder="name.folder_name" :dir="dir">
                             </tree>
                         </li>
-                        <!--<li class="inspan" v-else>
-                            no folder
-                        </li>-->
                     </ul>
                 </li>
             </ul>
@@ -96,7 +93,9 @@
             },
             dialog_c(val)
             {
-                this.dialog.open = false;
+                console.log("closed");
+                if (!val)
+                    this.closedialog();
             }
         },
         methods:
@@ -136,7 +135,10 @@
                 },
                 closedialog()
                 {
-                    this.dialog.open = false;
+                   // this.dialog.open = false;
+                    //this.open = false;
+                    //this.$destroy();
+                    this.$emit("update:open",false);
                 },
                 getlist()
                 {

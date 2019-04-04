@@ -1,10 +1,11 @@
 
 import myajax from './myajax'
 import store from '../../store'
+import costum from './costum'
 
 
 class fileAPI{
-    static put(files,dir)
+/*    static put(files,dir)
     {
         return new Promise((resolve,reject)=>{
             let url = 'file/put';
@@ -17,7 +18,7 @@ class fileAPI{
             },'post',)
 
         });
-    };
+    };*/
 
     static move(datas,dir,dir_to)
     {
@@ -49,6 +50,8 @@ class fileAPI{
                 reject();
             },'post')
 
+        }).then(()=>{
+            costum.me()
         });
     };
 
@@ -64,7 +67,9 @@ class fileAPI{
             },(err)=>{
                 console.log(err.response);
                 reject();
-            },'post')
+            },'delete')
+        }).then(()=>{
+            costum.me()
         });
     };
 
@@ -75,10 +80,7 @@ class fileAPI{
             let url = 'file/createdownload';
             let ajax = new myajax();
             ajax.ajax(url,{filename:datas,dir},(response)=>{
-                //console.log(response.data.success);
-                //this.startdownload(response.data.success.path);
-
-                resolve(response.data.success.path);
+                resolve(response.data.success);
             },(err)=>{
                 console.log(err.response);
                 reject();
@@ -130,33 +132,21 @@ class fileAPI{
         })();
     }
 
-
-/*    static startdownload(path)
+    static uploadfile(index,file =null)
     {
-        let code = path.split("/");
-        code = code[code.length - 1];
-        return new Promise((resolve,reject)=>{
-            let url = 'download/' + code;
-            let ajax = new myajax();
-
-            ajax.ajax(url,{},(response)=>{
-                resolve();
-            },(err)=>{
-                console.log(err.response);
-                reject();
-            },'get');
-
-        });
-    }*/
-
-    static uploadfile(file,index)
-    {
+        file = file || store.state.files[index];
 
         return new Promise((resolve, reject) =>{
             store.commit('storefilestatus',{key:index,data:'uploading'});
             let lastsize = 0;
             let lasttime = new Date().getTime();
             let putf = new myajax();
+            if (store.state.filecancel[index])
+            {
+                store.commit('storefilestatus',{key:index,data:'user cancel'});
+                store.commit('storefileuploading',{key:index,data:0});
+                reject();
+            }
             putf.ajax("file/put",{dir:file.path,
                 filename:file.name,
                 size:file.size,
@@ -171,9 +161,11 @@ class fileAPI{
                 {
                     store.commit('storefilestatus',{key:index,data:'success,by quick'});
                     store.commit('storefileuploading',{key:index,data:0});
+                    resolve();
                 }
                 },
                 (err)=>{
+                    reject();
                 if(err.response)
                 {
                     if (err.response.data.error === "already have same name file")
@@ -202,6 +194,7 @@ class fileAPI{
                         console.log(response);
                         store.commit('storefilestatus',{key:index,data:'success'});
                         store.commit('storefileuploading',{key:index,data:0});
+                        resolve();
                     },(e)=>{
                         store.commit('storefileuploading',{key:index,data:Math.floor((e.loaded / e.total*10000))/100 + '%'});
                         console.log( Math.floor(((e.loaded-lastsize)/(new Date().getTime()-lasttime))*1000/1024*100)/100 );
@@ -210,9 +203,11 @@ class fileAPI{
                         if (store.state.filecancel[index])
                         {
                             putf.choosecancel('user cancel upload');
+                            resolve();
                         }
                     },(err)=>{
                         console.log(err.message);
+
                         if (err.message === 'user cancel upload')
                         {
                             store.commit('storefilestatus',{key:index,data:'user cancel'});
@@ -223,6 +218,7 @@ class fileAPI{
                             store.commit('storefilestatus',{key:index,data:'failed'});
                             store.commit('storefileuploading',{key:index,data:0});
                         }
+                        reject();
                     }
                 )
             }
@@ -240,7 +236,7 @@ class fileAPI{
             },(err)=>{
                 console.log(err.response);
                 reject();
-            },'post')
+            },'post');
         });
     }
 

@@ -28,7 +28,7 @@
                     <div class="sidebar-list"  >
                         <div class=" innerx sidebar-list-inner"   v-swipeleft="(s,e)=>sleft('mus')" >
                             <div style="width: calc(100% ); height: calc(100% - 12rem); ">
-                                <mu-list>
+                                <mu-list v-show="shows">
                                     <!--<mu-list-item  v-if="!bigscreen" @click="closebar()" button>-->
                                   <!--  <mu-list-item  @click="closebar()" button>
                                         <mu-list-item-title>1</mu-list-item-title>
@@ -36,25 +36,17 @@
                                     <mu-list-item  @click="closebar()" button>
                                         <mu-list-item-title>2</mu-list-item-title>
                                     </mu-list-item>-->
-                                    <mu-list-item button v-for="(items,index) in this.$store.state.sidebar_items" @click="pushto(items) " :key="index">
-                                        <mu-list-item-title>{{items.name}}</mu-list-item-title>
-                                    </mu-list-item>
-
-
+                                    <transition-group appear tag="li"  name="fadeLeft" move-class="sidemove" :duration="300" >
+                                            <mu-list-item button v-for="(items,index) in uselist" @click="pushto(items) " :key="items.name" >
+                                                <mu-list-item-title>{{items.name}}</mu-list-item-title>
+                                            </mu-list-item>
+                                            <mu-list-item  v-if="bigscreen" @click="closebar()" key="close" button style="animation-duration:0.1s;">
+                                                <mu-list-item-title>Close</mu-list-item-title>
+                                            </mu-list-item>
+                                    </transition-group>
                                 </mu-list>
 
-                                <!--                    <mu-list>
-                                                        <mu-slide-left-transition>
-                                                            <div v-show="shows">
-                                                                <mu-list-item  @click="jumpto(key)" v-for="(item,key) in lists" :key="key"   button>
-                                                                    <mu-list-item-title>{{item}}</mu-list-item-title>
-                                                                </mu-list-item>
-                                                                <mu-list-item  v-if="!this.$store.state.table" @click="muclose()" button>
-                                                                    <mu-list-item-title>Close</mu-list-item-title>
-                                                                </mu-list-item>
-                                                            </div>
-                                                        </mu-slide-left-transition>
-                                                    </mu-list>-->
+
                             </div>
                         </div>
                     </div>
@@ -70,7 +62,7 @@
                 </div>
             </mu-drawer>
         </mu-container>
-        <Mydialog :name="dialog.name" :message="dialog.msg" :open="dialog.open" :path="dialog.path" :confirm="true"> </Mydialog>
+        <Mydialog :name="dialog.name" :message="dialog.msg" :open.sync="dialog.open" :path="dialog.path" :confirm="true"> </Mydialog>
     </div>
 </template>
 
@@ -109,10 +101,26 @@
                     msg:'',
                     path:''
                 },
+                uselist:[],
+                sidebar_items:[
+                    {name:"disk",path:"/home/disk"},
+                    {name:"share",path:"/share"},
+                    {name:"setting",path:"/setting"},
+                    ],
+                rolerouter:false,
+                shows:true,
             }
         },
         computed :{
             ...mapGetters(["bigscreen","islogin","barOpen","userInfo"]),
+            routename()
+            {
+                return this.$route.path;
+            },
+            isrole()
+            {
+                return this.$store.state.role;
+            }
 
         },
         watch:{
@@ -120,7 +128,7 @@
                 if (!this.$store.state.sidebarBanName.includes(this.$store.state.title_name))
                     this.sidebar.open = val ;
                 else
-                    this.sidebar.open = false ;
+                    this.sidebar.open = true ;
                 //if (this.$store.state.title_name !== )
 
                // console.log(this.$router.path);
@@ -147,9 +155,19 @@
                     this.user.name = val.name;
                     this.user.uid = val.id;
                 }
-
-
+            },
+            isrole(val)
+            {
+               // console.log("outs");
+                if(!val)
+                    this.setpath(true);
+                   // this.rolerouter = false ;
+            },
+            routename()
+            {
+                this.setpath();
             }
+
         },
         beforeMount()
         {
@@ -166,6 +184,7 @@
                 this.user.name = s.name;
                 this.user.uid  = s.id;
             }
+            this.setpath(this.routename);
             //console.log(this.spaceused);
         },
         methods:{
@@ -178,8 +197,37 @@
                 this.dialog.open = true;
                 this.dialog.msg  = '确认要退出么';
                 this.dialog.path = '/logout';
-                this.$nextTick(()=>this.dialog.open = false);
+                // this.$nextTick(()=>this.dialog.open = false);
 
+            },
+            setpath(val = false)
+            {
+                if (/*this.routename.indexOf("/manage") !== -1 &&*/ this.$store.state.role_items.length !== 0 && this.rolerouter === false )
+               // if (this.isrole === true && this.$store.state.role_items.length !== 0 && this.rolerouter === false )
+             //   if (this.isrole === true && this.rolerouter === false)
+                {
+                    this.uselist = this.$store.state.role_items;
+                    this.shows = false;
+                    this.$nextTick(()=>this.shows = true);
+                    if (this.uselist[this.uselist.length - 1].name !== "userchoose")
+                        this.uselist.push({name:"userchoose",path:"/home"});
+                    this.rolerouter = true;
+                }
+                if ((this.routename.indexOf("/manage") === -1 && this.rolerouter === true) || this.uselist.length === 0  )
+             //   if ((this.isrole === true && this.rolerouter === true) || this.uselist.length === 0)
+               // if (this.isrole === false && this.rolerouter === true)
+                {
+                    this.uselist = this.sidebar_items;
+                    this.shows = false;
+                    this.$nextTick(()=>this.shows = true);
+                    if (this.uselist[this.uselist.length - 1].name !== "manage" && this.rolerouter === true && this.isrole === true )
+                        this.uselist.push({name:"manage",path:"/manage"});
+                    this.rolerouter = false;
+                }
+                if (val === true)
+                {
+                    this.uselist = this.sidebar_items;
+                }
             },
             tologin()
             {
@@ -214,7 +262,8 @@
             tooutshow()
             {
                 return !(this.bigscreen || this.sidebar.open || this.$store.state.sidebarBanName.includes(this.$store.state.title_name));
-            }
+            },
+
 
         }
 
@@ -233,7 +282,13 @@
 
 
     }
+    .sidemove {
+        transition: all 1s;
+    }
 
+    .sidemove-leave-active {
+        position:absolute;
+    }
     .sidebar-flex-item{
         width: 100%;
         flex: none;

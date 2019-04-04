@@ -16,6 +16,8 @@ const forgetpw_s2 = resolve('steptwo',"./views/forget");
 const forgetpw_s3 = resolve('stepthree',"./views/forget");
 const logout = resolve('logout');
 const disk = resolve('disk');
+const setting = resolve('setting');
+const share =resolve('share');
 // const dirpan = resolve('',"@components/pan");
 
 function resolve(name,fullpath = null)
@@ -96,7 +98,18 @@ const router = new Router({
             path: '/test',
             name: 'test',
             component: testtree,
-        },/*
+        },
+        {
+            path: '/setting',
+            name: 'setting',
+            component: setting,
+        },
+        {
+            path: '/share',
+            name: 'share',
+            component: share,
+        },
+        /*
         {
             path: '/share',
             name: 'share',
@@ -132,31 +145,28 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
-
-
-    /* {
-       let map = JSON.parse(sessionStorage.getItem('maps'));
-       store.commit('newmap',map);
-       router.addRoutes(map);
-     }*/
-     console.log(!sessionStorage.getItem("role"));
-    if (to.path !== from.path && sessionStorage.getItem("role") === "false")
+    if ((to.path !== from.path && sessionStorage.getItem("role") === "false") || from.path === '/login')
     {
         getrole.getrolemap().then((resolve)=>{
             if (resolve !== 0)
             {
                 router.addRoutes(resolve);
             }
-        });
-    }
+        },(reject)=>{
 
-
-    if (to.path === '/login')
+        }).then(()=>next());
+    }else
     {
+        if (to.path === '/login')
+        {
 
+            next();
+        }
         next();
     }
-    next();
+
+
+
 });
 
 export default router;

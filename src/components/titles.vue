@@ -1,17 +1,22 @@
 <template>
     <div style="user-select: none">
+        <transition name="fade" >
         <mu-appbar class="toptitle" color="primary" :class="this.$store.state.screen > 4/3 && this.$store.state.sidebarOpen ? '':'long'"  >
             <mu-button icon slot="left" v-if="!this.$store.state.table" @click="titleaction()">
                 <!--<mu-icon value="menu" > </mu-icon>-->
                 <menuicon :type="type"> </menuicon>
             </mu-button>
-            <div v-else slot="left" class="bigtest">
-                {{this.$store.state.title_name}}
-            </div>
-            <div v-if="!this.$store.state.table">
-                {{this.$store.state.title_name}}
-            </div>
+                <div v-else slot="left" class="bigtest">
+                    <transition name="fade" mode="out-in">
+                        {{this.$store.state.title_name}}
+                    </transition>
+                </div>
+                <div v-if="!this.$store.state.table">
+
+                        {{this.$store.state.title_name}}
+                </div>
         </mu-appbar>
+        </transition>
     </div>
 </template>
 

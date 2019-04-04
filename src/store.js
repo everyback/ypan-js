@@ -22,11 +22,14 @@ let state = {
     dir_to:"/",
     r_map:[],
     role:false,
-    sidebar_items:[
+/*    sidebar_items:[
         {name:"disk",path:"/home/disk"},
         {name:"share",path:"/share"},
         {name:"my",path:"/my"},
-    ],
+    ],*/
+    role_items:[],
+
+
 
     selected:{
         file:[],
@@ -43,6 +46,7 @@ let state = {
     filestatus:[],
     fileuploading:[],
     filecancel:[],
+    indoing:0,
 };
 
 let getters = {
@@ -217,9 +221,20 @@ let mutations = {
     {
         state.path = data;
     },
+/*
     pushname(state,data)
     {
         state.sidebar_items = state.sidebar_items.concat(data);
+    }
+*/
+    plusload(state)
+    {
+        state.indoing ++;
+    },
+
+    minusload(state)
+    {
+        state.indoing --;
     }
 
 };

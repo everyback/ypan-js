@@ -10,6 +10,10 @@ class getrolemap{
             {
                 let user = JSON.parse(localStorage.getItem("user_info"));
                 // console.log(user);
+                if (!user ||user === {})
+                {
+                    reject (0);
+                }
                 if (user.role !== 1 )
                 {
                     resolve(0);
@@ -23,7 +27,7 @@ class getrolemap{
                 {
                     resolve(store.state.r_map);
                 }
-
+                console.log(user.role);
                 if (user.role === 1 )
                 {
                     let ajax = new myajax();
@@ -32,9 +36,8 @@ class getrolemap{
                         if (response.data.success.routes.length !== 0)
                         {
                             store.commit("storeNew",{key:"r_map",data:response.data.success.routes});
-                            store.commit("storeNew",{key:"r_map",data:response.data.success.routes});
                             store.commit("storeNew",{key:'role',data:true});
-                            store.commit("pushname",response.data.success.items);
+                            store.commit("storeNew",{key:"role_items",data:response.data.success.items});
                             sessionStorage.setItem("role",true);
                             resolve(this.generaMenu(response.data.success.routes));
                         }

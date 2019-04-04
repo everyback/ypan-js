@@ -1,6 +1,7 @@
 
 import myajax from './myajax'
 import store from '../../store'
+import costum from './costum'
 
 
 class folderAPI{
@@ -24,6 +25,8 @@ class folderAPI{
                 console.log(err.response);
                 reject(err.response);
             }, 'post');
+        }).then(()=>{
+            costum.me()
         });
     };
 
@@ -56,6 +59,8 @@ class folderAPI{
                 reject();
             },'post',)
 
+        }).then(()=>{
+            costum.me()
         });
     }
     static todelete(datas,dir)
@@ -69,8 +74,10 @@ class folderAPI{
             },(err)=>{
                 console.log(err.response);
                 reject();
-            },'post',)
+            },'delete',)
 
+        }).then(()=>{
+            costum.me()
         });
     }
     static rename(oldname,newname,dir)

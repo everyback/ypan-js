@@ -1,13 +1,13 @@
 <template>
-    <p>managehome</p>
+    <p>this is share</p>
 </template>
 
 <script>
     export default {
-        name: "managehome",
+        name: "setting",
         created()
         {
-            this.$store.commit("storeNew",{key:"title_name",data:"Manage"});
+            this.$store.commit("storeNew",{key:"title_name",data:"Setting"});
 
         },
     }

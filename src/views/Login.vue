@@ -55,6 +55,7 @@
    // import Loading from 'muse-ui-loading';
     import MuRow from "muse-ui/es5/Grid/Row";
     import {mapActions, mapGetters} from 'vuex'
+    import costum from "../plugings/API/costum"
    // import myajax from
    // import Mydialog from "../template/mydialog";
     //  import axios from 'axios'
@@ -87,6 +88,7 @@
                     msg:'',
                     path:''
                 },
+                old_sidebar:false,
                 usernameRules: [
                     { validate: (val) => !!val, message: '未填写用户名或邮箱'},
                     { validate: (val) => val.length >= 0, message: '用户名长度大于3'},
@@ -103,8 +105,11 @@
         created()
         {
           this.$store.commit('storeNew',{key:'title_name',data:'Login'});
-          //this.sidebar = this.$store.state.sidebarOpen;
+          //this.sidebar = this.$store.state.sidebarOpen;'
+            this.old_sidebar = !!this.$store.state.sidebarOpen;
+            console.log(this.old_sidebar);
           this.$store.commit('storeNew',{key:'sidebarOpen',data:false});
+
         },
         beforeMount()
         {
@@ -161,12 +166,13 @@
                             this.$store.commit('storeNew',{key:'login',data:true});
                             if (localStorage.getItem('login'))
                             {
-                                let url2 = 'auth/me';
-                                ajax.ajax(url2,data,(response)=>{
+                                costum.me();
+                                // let url2 = 'auth/me';
+                               /* ajax.ajax(url2,data,(response)=>{
                                     localStorage.setItem('user_info',JSON.stringify(response.data));
                                     this.$store.commit('storeNew',{key:'user_info',data:response.data});
                                     this.$router.push('/home');
-                                },(err)=>{console.log(err.response)},'post',true);
+                                },(err)=>{console.log(err.response)},'get',true);*/
                             }
                             this.$router.push('/home');
 
@@ -206,10 +212,14 @@
                     this.$router.push('/'+way);
                 },
             },
-        destroyed()
+        beforeDestroy()
         {
-            if (this.bigscreen && !this.$store.state.sidebarBanName.includes(this.$store.state.title_name))
-                this.$store.commit('storeNew',{key:'sidebarOpen',data:true});
+           // console.log("NNNNNNN");
+            if (this.bigscreen  /* && !this.$store.state.sidebarBanName.includes(this.$store.state.title_name)*/)
+            {
+
+                this.$store.commit('storeNew',{key:'sidebarOpen',data:this.old_sidebar});
+            }
             //this.$store.commit('storeNew',{key:'sidebarOpen',data:this.sidebar})
         }
 

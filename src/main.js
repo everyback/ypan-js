@@ -12,6 +12,7 @@ import 'muse-ui/dist/muse-ui.css'
 import "../public/common.css";
 //import 'muse-ui-progress/dist/muse-ui-progress.css';
 import NProgress from 'muse-ui-progress';
+require('vue2-animate/dist/vue2-animate.min.css');
 
 //import touch from "./plugings/directive/directive"
 

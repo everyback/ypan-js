@@ -1,10 +1,13 @@
 <template>
     <div  class="pan" ondragstart="return false" @mouseover.self="outover()"  >
-        <router-link v-if="!(fullPath === '/')" ondragstart="return false" class="text-left in-block returnone" :to="{ name: 'dir', query: { path: getpath(paths.length -1 ) }}"> 返回上一层 </router-link>
-        <mu-breadcrumbs class="left-leave" >
-            <mu-icon value="chevron_right" slot="divider"/>
-            <mu-breadcrumbs-item v-for="(value,index) in this.$store.state.path" :key="value + '/'+index" :to="{ name: 'dir', query: { path: getpath(index + 1) }}" :disabled=" index === paths.length - 1 "  >{{value}}</mu-breadcrumbs-item>
-        </mu-breadcrumbs>
+        <!--<transition-group appear  name="fadeLeft" mode="out-in" :duration="300" tag="div" >-->
+            <router-link v-if="!(fullPath === '/')" ondragstart="return false" class="text-left in-block returnone" :to="{ name: 'dir', query: { path: getpath(paths.length -1 ) }}"> 返回上一层 </router-link>
+            <mu-breadcrumbs class="left-leave" >
+                <mu-icon value="chevron_right" slot="divider"/>
+                <mu-breadcrumbs-item v-for="(value,index) in this.$store.state.path" :key="value + '/'+index" :to="{ name: 'dir', query: { path: getpath(index + 1) }}" :disabled=" index === paths.length - 1 "  >{{value}}</mu-breadcrumbs-item>
+            </mu-breadcrumbs>
+        <!--</transition-group>-->
+        <transition appear  name="zoom" mode="out-in" :duration="300" >
         <dl style="margin: auto;margin-bottom: 5px; background-color: rgba(230,231,230,0.1);width:98%;"  >
             <dt style="border-bottom:1px solid #bbdefb;">
                 <ul class="ul-head">
@@ -53,9 +56,9 @@
                                 <span class="text-left in-block " style="width: 40px;position: relative;top:8px">
                                     <mu-checkbox v-model="selects[index]" />
                                 </span>
-                                <span class="text-left in-block filename-width" @click.self.stop="set(index)" v-if="selectrename !== index" >
+                                <span class="text-left in-block filename-width " @click.self.stop="set(index)" v-if="selectrename !== index" >
                                     <mu-icon class="icon" size="24" value="folder" color="amber200"  />
-                                    <router-link class="left-margin" ondragstart="return false"  :to="{ name: 'dir', query: { path: fullPath+'/'+ value.folder_name }}">{{value.folder_name}}</router-link>
+                                    <router-link class="left-margin hidename" ondragstart="return false"  :to="{ name: 'dir', query: { path: fullPath+'/'+ value.folder_name }}">{{value.folder_name}}</router-link>
                                 </span>
                                 <span class="text-left in-block filename-width"  v-else>
                                     <mu-text-field class="left-margin phone" v-model="new_name" :placeholder="value.folder_name" />
@@ -77,10 +80,10 @@
                                 <span class="text-left in-block " style="width: 40px;position: relative;top:8px">
                                     <mu-checkbox v-model="selects[index]" />
                                 </span>
-                                <span class="text-left in-block filename-width"  @click.self.stop="set(index)" v-if="selectrename !== index"  >
-                                    <span > {{value.file_name}} </span>
+                                <span class="text-left in-block filename-width "  @click.self.stop="set(index)" v-if="selectrename !== index"  >
+                                    <span class="hidename" > {{value.file_name}} </span>
                                 </span>
-                                <span class="text-left in-block filename-width"  v-else>
+                                <span class="text-left in-block filename-width "  v-else>
                                     <mu-text-field class="left-margin phone" v-model="new_name" :placeholder="value.file_name" />
                                     <mu-button icon color="success" small class="name-button" @click="torename()">
                                         <mu-icon value="done" />
@@ -128,6 +131,7 @@
                 </div>
             </mu-load-more>
         </dl>
+        </transition>
     </div>
 
 </template>
@@ -185,13 +189,18 @@
             {
                 this.page = JSON.parse(sessionStorage.getItem(this.fullPath)).page;
             }
-            if (!this.$route.query.path)
+            if (!this.$route.query.path && !this.$route.query.search)
             {
                 this.listfile(this.page);
             }
-            else
+            else if (this.$route.query.path )
             {
                 this.listfile(this.page,this.getpath());
+            }
+            else if (this.$route.query.search)
+            {
+                console.log("search");
+                console.log(this.$route.query.search);
             }
 
 
@@ -507,7 +516,7 @@
                     FolderAPI.rename(oldname,newname,this.fullPath).then((resolve)=>{
                         this.new_name = '';
                         sessionStorage.removeItem(this.fullPath);
-                        this.listfile(1);
+                        this.refresh();
                         this.cancelrename();
                     },(reject)=>{
                         console.log(reject);
@@ -519,7 +528,7 @@
                     FileAPI.rename(oldname,newname,this.fullPath).then((resolve)=>{
                         this.new_name = '';
                         sessionStorage.removeItem(this.fullPath);
-                        this.listfile(1);
+                        this.refresh();
                         this.cancelrename();
                     },(reject)=>{
                         console.log(reject);
@@ -566,7 +575,7 @@
         user-select: none;
     }
     .filename-width{
-        width: 52%;
+        width: 51%;
     }
 
     .size-width{
@@ -598,6 +607,12 @@
         position: relative;
         /*border-top: 1px solid black;*/
         border-bottom:1px solid #e3f2fd;
+    }
+    .hidename{
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        overflow:hidden;
+        /*width:500px;*/
     }
    /* .dds:hover{
         background-color: #e0e0e0;

@@ -31,24 +31,29 @@
                    <mu-button v-if="haveselected" @click="download()">
                        DOWNLOAD
                    </mu-button>
+                   <mu-button v-if="haveselected" @click="openshare()">
+                       SHARE
+                   </mu-button>
                    <mu-button v-if="haveselected" @click="onrename()" :disabled="selectsum !== 1">
                        RENAME
                    </mu-button>
                </div>
            </mu-paper>
-           <folder :action="()=>move()" :open="selectopen.move" />
-           <folder :action="()=>copy()" :open="selectopen.copy"  />
+           <folder :action="()=>move()" :open.sync="selectopen.move" />
+           <folder :action="()=>copy()" :open.sync="selectopen.copy"  />
+           <selectshare  :open.="selectopen.share"   />
            <my-dialog   :action="()=>todelete()" :open.sync="selectopen.delete"  :name="dialog.name" :message="dialog.msg" :confirm="true" />
        </div>
        <mu-paper style="margin-top: 20px;min-height:670px;" :z-depth="5">
            <!--<dragfiles />-->
            <!--<keep-alive>-->
+
                 <router-view :key="key" />
            <!--</keep-alive>-->
        </mu-paper>
        <upload />
        <dragfiles />
-       <a :href="herf" download v-show="false" v-if="isdownload" ref="getfile">fuckssss</a>
+       <a :href="herf" :download="downloadname" v-show="false"  ref="downloadfile">4</a>
    </div>
 
 
@@ -65,9 +70,14 @@
     import MyDialog from "../components/myDialog";
     import md5 from "../plugings/md5"
     import sha1 from "../plugings/sha1"
+    import queue from "../plugings/queue"
+    import Share from "./share";
+    import Selectshare from "../components/share";
 
     export default {
         components: {
+            Selectshare,
+            Share,
             MyDialog,
             Folder,
             Pan,
@@ -87,9 +97,13 @@
                     move:false,
                     copy:false,
                     delete:false,
+                    share:false,
                 },
                 isdownload:false,
                 herf:'',
+                downloadname:"",
+                ques:new queue(),
+
             }
         },
         created()
@@ -100,6 +114,11 @@
                 this.$store.commit('storeNew',{key:'needselectes',data:false});
               //  this.$off('selecteds');
             });*/
+        },
+        destroyed()
+        {
+            this.$store.commit("storeNew",{key:'path',data:['/']});
+            this.$store.commit("storeNew",{key:'dir_to',data:"/"});
         },
         computed:{
             ...mapGetters(['fullPath',"haveselected","selectsum","files"]),
@@ -112,6 +131,12 @@
             {
                 //console.log(to);
                // console.log(this.$route.query.path);
+                if (JSON.stringify(this.$route.query) === '{}')
+                {
+                    this.$store.commit("storeNew",{key:'path',data:['/']});
+                    this.$store.commit("storeNew",{key:'dir_to',data:"/"});
+                    return ;
+                }
                 let arr = this.$route.query.path.split('/');
                 arr = arr.filter((val)=>{
                     return !(val === "" || val === "/");
@@ -146,6 +171,7 @@
                         //this.selectopen.move = false;
                         this.$store.commit("storeNew",{key:"closedialog",data:true});
                         this.$nextTick(()=>this.$store.commit("storeNew",{key:"closedialog",data:false}));
+                        this.$emit("update:open",false);
                         sessionStorage.clear();
                         this.$store.commit("storeNew",{key:"refresh",data:true});
 
@@ -172,6 +198,7 @@
                         //this.selectopen.move = false;
                         this.$store.commit("storeNew",{key:"closedialog",data:true});
                         this.$nextTick(()=>this.$store.commit("storeNew",{key:"closedialog",data:false}));
+                        this.$emit("update:open",false);
                         sessionStorage.clear();
                         this.$store.commit("storeNew",{key:"refresh",data:true});
 
@@ -225,10 +252,15 @@
                        // this.$nextTick(()=>this.$store.commit("storeNew",{key:"closedialog",data:false}));
                        // sessionStorage.clear();
                       //  this.$store.commit("storeNew",{key:"refresh",data:true});
-                        console.log(resolve);
+                        console.log(resolve[0]);
                         this.isdownload = true;
-                         this.herf = "http://" + resolve;
-                        this.$refs.getfile.click();
+                         this.herf = "http://" + resolve[0].path;
+                         this.downloadname = resolve[0].name;
+                         this.$nextTick(()=>{
+                             this.$refs.downloadfile.click();
+                             this.isdownload = false;
+                         });
+
 
                     },(reject)=>{
                         console.log("failed");
@@ -241,14 +273,14 @@
                 openmove()
                 {
                     this.selectopen.move = this.haveselected ;
-                    this.$nextTick(()=>this.selectopen.move = false);
+                    //this.$nextTick(()=>this.selectopen.move = false);
                     //setTimeout(()=>this.selectopen.move = false,1000);
                    // this.selectopen.move = true;
                 },
-                opencopy()
+                 opencopy()
                 {
                     this.selectopen.copy = true;
-                    this.$nextTick(()=>this.selectopen.copy = false);
+                   // this.$nextTick(()=>this.selectopen.copy = false);
                 },
                 opendelete()
                 {
@@ -256,7 +288,7 @@
                     let all = data.file.length + data.folder.length;
                     this.dialog.msg = `确认删除${all}个文件？`;
                     this.selectopen.delete = true;
-                    this.$nextTick(()=>this.selectopen.delete = false);
+                    //this.$nextTick(()=>this.selectopen.delete = false);
                 },
                 onrename ()
                 {
@@ -298,7 +330,8 @@
                             this.$store.commit('storefilestatus',{key:allleng,data:'calc sha1'});
                             value.silce_sha1 = await sha1.sha1File(value);
                             this.$store.commit('storefilestatus',{key:allleng,data:'waiting upload'});
-                            FileAPI.uploadfile(value,allleng);
+                            //FileAPI.uploadfile(allleng,value);
+                            this.ques.push(allleng);
                         }
                         catch(err)
                         {
@@ -314,7 +347,10 @@
                     this.$refs.folder.value = null;
                     this.$refs.file.value = null;
                 },
+                openshare()
+                {
 
+                }
 /*
                 getfile($event)
                 {

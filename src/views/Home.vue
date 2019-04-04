@@ -1,7 +1,8 @@
 <template>
   <div class="home">
-
-      <router-view />
+      <transition appear  name="fadeUp" mode="out-in" :duration="500" >
+      <router-view  />
+      </transition>
   </div>
 
 </template>
