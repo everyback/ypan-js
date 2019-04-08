@@ -104,6 +104,7 @@
                 uselist:[],
                 sidebar_items:[
                     {name:"disk",path:"/home/disk"},
+                    {name:"my share",path:"/myshare"},
                     {name:"share",path:"/share"},
                     {name:"setting",path:"/setting"},
                     ],

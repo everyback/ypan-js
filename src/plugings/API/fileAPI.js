@@ -77,9 +77,10 @@ class fileAPI{
     {
 
         return new Promise((resolve,reject)=>{
-            let url = 'file/createdownload';
+            //let url = 'createdownload';
+            let url = 'createpath';
             let ajax = new myajax();
-            ajax.ajax(url,{filename:datas,dir},(response)=>{
+            ajax.ajax(url,{filename:datas.files,foldername:datas.folders,dir},(response)=>{
                 resolve(response.data.success);
             },(err)=>{
                 console.log(err.response);

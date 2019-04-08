@@ -18,6 +18,7 @@ const logout = resolve('logout');
 const disk = resolve('disk');
 const setting = resolve('setting');
 const share =resolve('share');
+const myshare = resolve('myshare');
 // const dirpan = resolve('',"@components/pan");
 
 function resolve(name,fullpath = null)
@@ -109,6 +110,11 @@ const router = new Router({
             name: 'share',
             component: share,
         },
+        {
+            path:"/myshare",
+            name: "myshare",
+            component: myshare,
+        },
         /*
         {
             path: '/share',
@@ -140,6 +146,11 @@ const router = new Router({
                     component: forgetpw_s3,
                 },
             ],
+        },
+        {
+            path: '*',
+            name: 'share',
+            component: share,
         },
     ]
 });

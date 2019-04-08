@@ -1,5 +1,5 @@
 <template>
-    <p>this is share</p>
+    <p>this is setting</p>
 </template>
 
 <script>

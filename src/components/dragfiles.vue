@@ -16,6 +16,7 @@
     //import sha1 from 'crypto-js/sha1';
     import sha1 from './../plugings/sha1'
     import folderAPI from './../plugings/API/folderAPI'
+    import queue from "../plugings/queue"
 
     export default {
         name: "dropfiles",
@@ -24,6 +25,7 @@
             return {
                 filesarray:[],
                 timer:'',
+                ques:new queue(),
             };
         },
         computed:
@@ -74,54 +76,10 @@
                 {
                     let files = [];
                     let arrs = [];
-           /*         for (let i in items)
-                    {
-                        if (!isNaN(parseInt(i)))
-                        {
-                            arrs.push(items[i]);
-                        }
-                    }*/
 
-
-                    //console.log(items instanceof Array);
 
                     console.log(items[0].webkitGetAsEntry());
-                 /*   (async ()=> {
-                        let pro = [];
-                        for (let i in items)
-                        {
-                            console.log('start');
 
-                            if (!isNaN(parseInt(i)))
-                            {
-                                console.log(items[i].webkitGetAsEntry().isDirectory);
-                                if (items[i].webkitGetAsEntry().isDirectory)
-                                {
-                                    console.log(items[i].webkitGetAsEntry().fullPath);
-                                    this.createFolder(items[i].webkitGetAsEntry().fullPath);
-                                    console.log('before');
-                                    files = files.concat(await this.scanFiles(items[i].webkitGetAsEntry()));
-                                    console.log('after');
-                                }
-                                else
-                                {
-                                    //console.log(items[i].getAsFile());
-                                    let file = items[i].getAsFile();
-                                    //console.log(items[i]);
-                                   // file.dir_path = fullPath;
-                                    files.push(file.dir_path);
-                                    /!*                                sha1.sha1File(items[i].getAsFile()).then((resolve)=>{
-                                                                        console.log(resolve);
-                                                                    })*!/
-                                }
-                            }
-
-                        }
-
-                        console.log(files);
-
-                        //this.portionfiles(files);
-                    })();*/
                 },
 
                 scanFiles(item)
@@ -194,56 +152,7 @@
                         })
                     });
                 },
-                calcfilemd5(resolve,reject,file,allleng)
-                {
-                    console.time('aaa');
-                    function calcing(resolve2,reject2,file,cancel) {
-                        const chunkSize = 5*(8*1024*1024);              //8*1024*1024*5              // Read in chunks of 2MB
-                        let chunks = Math.ceil(file.size / chunkSize);
-                        let currentChunk = 0;
-                        let spark = new SparkMD5.ArrayBuffer();
-                        let fileReader = new FileReader();
-                        let blobSlice = File.prototype.slice;
-                        let md5 = false;
 
-                        fileReader.onload =  (e)=> {
-                            spark.append(e.target.result);                   // Append array buffer
-                            currentChunk++;
-
-                            if (currentChunk < chunks) {
-                                loadNext();
-                            } else {
-                                md5 = spark.end();
-                                console.timeEnd('aaa');
-                                resolve2(md5);
-                            }
-                        };
-
-                        fileReader.onerror = (e)=> {
-                            console.warn('oops, something went wrong.');
-                            reject2(false);
-                        };
-
-                        function loadNext() {
-                            let start = currentChunk * chunkSize,
-                                end = ((start + chunkSize) >= file.size) ? file.size : start + chunkSize;
-                            fileReader.readAsArrayBuffer(blobSlice.call(file, start, end));
-                            if (cancel[allleng])
-                            {
-                                reject2('user cancel md5');
-                            }
-                        }
-                        // console.log(cancel);
-                        loadNext();
-                    }
-                    let md5 = false;
-                    // console.log(this);
-                    let promi = new Promise( (resolve2,reject2)=>{
-                        calcing(resolve2,reject2,file,this.$store.state.filecancel)
-                    });
-                    promi.then((result)=>{resolve(result)},(err)=>reject(err));
-
-                },
                 uploadfile(file,index,md5)
                 {
                     this.$store.commit('storefilestatus',{key:index,data:'uploading'});
@@ -280,48 +189,53 @@
                     )
 
                 },
-
-                createFolder(pathname)
+                upload(evlists)
                 {
-                    /*let folder = new folderAPI();
-                    folder.createFolder(pathname);*/
+                    let list = Array.from(evlists);
 
-                }
+                    if (!list.length || list.length === 0)
+                        return console.error("没有文件");
+                    let alllength = 0;
+                    this.$store.commit("storeNew",{key:"uploadBoxOpen",data:true});
 
-
-                /*createFolder(pathname)
-                {
-                    let dir = this.paths;
-                    let path = pathname.split("/");
-                    path = path.filter((val)=>{
-                        return !(val === "" || val === "/");
-                    });
-                    let name = path.pop();
-                    dir = dir.filter((val)=>{
-                        return !(val === "" || val === "/");
-                    });
-                    dir.unshift("");
-                    if (this.$store.state.path.length === 1)
+                    if (this.$store.state.files[0])//添加文件列表
                     {
-                        dir = "/" + path.join("/");
-                    }
-                    else if (path.length <= 1)
-                    {
-                        dir = dir.join('/') ;
+                        alllength = this.$store.state.files.length;//旧长度
+                        this.$store.commit('addfilelist',list);
                     }
                     else
                     {
-                        dir = dir.join('/') + "/" + path.join("/");
+                        this.$store.commit('storeNew',{key:'files',data:list});
                     }
-                    let folder_name = name;
-                    let create = new ajax.ajax();
-                    let url = "folder/create";
-                    create.ajax(url,{dir,folder_name},(respone)=>{
-                        console.log(respone);
-                    },(err)=>{
-                        console.log(err.respone);
-                    },'post');
-                }*/
+
+                    let dir =  this.fullPath;
+                    if (dir === "/" )
+                    {
+                        dir = "";
+                    }
+                    list.forEach(async (value,index)=>{
+                            let allleng = alllength+index;
+                            this.$store.commit('filecancel',{key:allleng,data:false});
+                            this.$store.commit('storefilestatus',{key:allleng,data:'waiting calc'});
+                            try{
+                                value.path = dir + "/" + value.webkitRelativePath.slice(0,value.webkitRelativePath.lastIndexOf("/"));
+                                this.ques.calcpush(allleng);
+                            }
+                            catch(err)
+                            {
+                                console.log(err.message);
+                                if (err.message.indexOf("user") !== -1)
+                                {
+                                    this.$store.commit('storefilestatus',{key:allleng,data:err.message});
+                                }
+                                return 1;
+                            }
+                        }
+                    );
+                }
+
+
+
             }
 
     }
@@ -408,4 +322,141 @@
                                     }
                                 })(entry);
                             });*/
+
+                                            calcfilemd5(resolve,reject,file,allleng)
+                {
+                    console.time('aaa');
+                    function calcing(resolve2,reject2,file,cancel) {
+                        const chunkSize = 5*(8*1024*1024);              //8*1024*1024*5              // Read in chunks of 2MB
+                        let chunks = Math.ceil(file.size / chunkSize);
+                        let currentChunk = 0;
+                        let spark = new SparkMD5.ArrayBuffer();
+                        let fileReader = new FileReader();
+                        let blobSlice = File.prototype.slice;
+                        let md5 = false;
+
+                        fileReader.onload =  (e)=> {
+                            spark.append(e.target.result);                   // Append array buffer
+                            currentChunk++;
+
+                            if (currentChunk < chunks) {
+                                loadNext();
+                            } else {
+                                md5 = spark.end();
+                                console.timeEnd('aaa');
+                                resolve2(md5);
+                            }
+                        };
+
+                        fileReader.onerror = (e)=> {
+                            console.warn('oops, something went wrong.');
+                            reject2(false);
+                        };
+
+                        function loadNext() {
+                            let start = currentChunk * chunkSize,
+                                end = ((start + chunkSize) >= file.size) ? file.size : start + chunkSize;
+                            fileReader.readAsArrayBuffer(blobSlice.call(file, start, end));
+                            if (cancel[allleng])
+                            {
+                                reject2('user cancel md5');
+                            }
+                        }
+                        // console.log(cancel);
+                        loadNext();
+                    }
+                    let md5 = false;
+                    // console.log(this);
+                    let promi = new Promise( (resolve2,reject2)=>{
+                        calcing(resolve2,reject2,file,this.$store.state.filecancel)
+                    });
+                    promi.then((result)=>{resolve(result)},(err)=>reject(err));
+
+                },
+
+                                 /*createFolder(pathname)
+                {
+                    let dir = this.paths;
+                    let path = pathname.split("/");
+                    path = path.filter((val)=>{
+                        return !(val === "" || val === "/");
+                    });
+                    let name = path.pop();
+                    dir = dir.filter((val)=>{
+                        return !(val === "" || val === "/");
+                    });
+                    dir.unshift("");
+                    if (this.$store.state.path.length === 1)
+                    {
+                        dir = "/" + path.join("/");
+                    }
+                    else if (path.length <= 1)
+                    {
+                        dir = dir.join('/') ;
+                    }
+                    else
+                    {
+                        dir = dir.join('/') + "/" + path.join("/");
+                    }
+                    let folder_name = name;
+                    let create = new ajax.ajax();
+                    let url = "folder/create";
+                    create.ajax(url,{dir,folder_name},(respone)=>{
+                        console.log(respone);
+                    },(err)=>{
+                        console.log(err.respone);
+                    },'post');
+                }*/
+
+
+
+                                 /*   (async ()=> {
+                        let pro = [];
+                        for (let i in items)
+                        {
+                            console.log('start');
+
+                            if (!isNaN(parseInt(i)))
+                            {
+                                console.log(items[i].webkitGetAsEntry().isDirectory);
+                                if (items[i].webkitGetAsEntry().isDirectory)
+                                {
+                                    console.log(items[i].webkitGetAsEntry().fullPath);
+                                    this.createFolder(items[i].webkitGetAsEntry().fullPath);
+                                    console.log('before');
+                                    files = files.concat(await this.scanFiles(items[i].webkitGetAsEntry()));
+                                    console.log('after');
+                                }
+                                else
+                                {
+                                    //console.log(items[i].getAsFile());
+                                    let file = items[i].getAsFile();
+                                    //console.log(items[i]);
+                                   // file.dir_path = fullPath;
+                                    files.push(file.dir_path);
+                                    /!*                                sha1.sha1File(items[i].getAsFile()).then((resolve)=>{
+                                                                        console.log(resolve);
+                                                                    })*!/
+                                }
+                            }
+
+                        }
+
+                        console.log(files);
+
+                        //this.portionfiles(files);
+                    })();*/
+
+
+                                       /*         for (let i in items)
+                    {
+                        if (!isNaN(parseInt(i)))
+                        {
+                            arrs.push(items[i]);
+                        }
+                    }*/
+
+
+                    //console.log(items instanceof Array);
+
 -->

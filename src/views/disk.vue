@@ -1,8 +1,9 @@
 <template>
    <div>
-       <div>
-           <mu-paper style=" min-height: 5rem; " :z-depth="5">
-               <div class="flex-box">
+       <div v-if="islogin">
+           <div >
+               <mu-paper style=" min-height: 5rem; " :z-depth="5">
+                   <div class="flex-box">
                        <mu-menu placement="bottom-start" open-on-hover >
                            <mu-button color="primary">UPLOAD</mu-button>
                            <mu-list slot="content">
@@ -19,41 +20,45 @@
                        <mu-button @click="opencreate()" >
                            CREATE NEW FOLDER
                        </mu-button>
-                   <mu-button v-if="haveselected" @click="openmove()">
-                      MOVE
-                   </mu-button>
-                   <mu-button v-if="haveselected" @click="opencopy()">
-                       COPY
-                   </mu-button>
-                   <mu-button v-if="haveselected" @click="opendelete()">
-                       DELETE
-                   </mu-button>
-                   <mu-button v-if="haveselected" @click="download()">
-                       DOWNLOAD
-                   </mu-button>
-                   <mu-button v-if="haveselected" @click="openshare()">
-                       SHARE
-                   </mu-button>
-                   <mu-button v-if="haveselected" @click="onrename()" :disabled="selectsum !== 1">
-                       RENAME
-                   </mu-button>
-               </div>
-           </mu-paper>
-           <folder :action="()=>move()" :open.sync="selectopen.move" />
-           <folder :action="()=>copy()" :open.sync="selectopen.copy"  />
-           <selectshare  :open.="selectopen.share"   />
-           <my-dialog   :action="()=>todelete()" :open.sync="selectopen.delete"  :name="dialog.name" :message="dialog.msg" :confirm="true" />
-       </div>
-       <mu-paper style="margin-top: 20px;min-height:670px;" :z-depth="5">
-           <!--<dragfiles />-->
-           <!--<keep-alive>-->
+                       <mu-button v-if="haveselected" @click="openmove()">
+                           MOVE
+                       </mu-button>
+                       <mu-button v-if="haveselected" @click="opencopy()">
+                           COPY
+                       </mu-button>
+                       <mu-button v-if="haveselected" @click="opendelete()">
+                           DELETE
+                       </mu-button>
+                       <mu-button v-if="haveselected" @click="download()">
+                           DOWNLOAD
+                       </mu-button>
+                       <mu-button v-if="haveselected" @click="openshare()">
+                           SHARE
+                       </mu-button>
+                       <mu-button v-if="haveselected" @click="onrename()" :disabled="selectsum !== 1">
+                           RENAME
+                       </mu-button>
+                   </div>
+               </mu-paper>
+               <folder :action="()=>move()" :open.sync="selectopen.move" />
+               <folder :action="()=>copy()" :open.sync="selectopen.copy"  />
+               <selectshare  :open.="selectopen.share"   />
+               <my-dialog   :action="()=>todelete()" :open.sync="selectopen.delete"  :name="dialog.name" :message="dialog.msg" :confirm="true" />
+           </div>
+           <mu-paper style="margin-top: 20px;min-height:670px;" :z-depth="5">
+               <!--<dragfiles />-->
+               <!--<keep-alive>-->
 
-                <router-view :key="key" />
-           <!--</keep-alive>-->
-       </mu-paper>
-       <upload />
-       <dragfiles />
-       <a :href="herf" :download="downloadname" v-show="false"  ref="downloadfile">4</a>
+               <router-view :key="key" :move="()=>openmove()" :copy="()=>opencopy()" :delete="()=>opendelete()"  :download="download"/>
+               <!--</keep-alive>-->
+           </mu-paper>
+           <upload />
+           <dragfiles />
+           <a :href="herf" :download="downloadname" v-show="false"  ref="downloadfile">4</a>
+       </div>
+       <div v-else>
+           <p> unlogin </p>
+       </div>
    </div>
 
 
@@ -121,7 +126,7 @@
             this.$store.commit("storeNew",{key:'dir_to',data:"/"});
         },
         computed:{
-            ...mapGetters(['fullPath',"haveselected","selectsum","files"]),
+            ...mapGetters(['fullPath',"haveselected","selectsum","files","islogin"]),
             key() {
                 return this.$route.name !== undefined? this.$route.name +new Date(): this.$route +new Date()
             },
@@ -232,8 +237,7 @@
                 },
                 download()
                 {
-                    let data = this.$store.state.selected;
-                    let pro = [];
+
 /*                    if (data.folder.length > 0)
                     {
                         pro.push(FolderAPI.todelete(data.folder,this.fullPath));
@@ -242,29 +246,37 @@
                     {
                         pro.push(FileAPI.todelete(data.file,this.fullPath));
                     }*/
-                    if (data.file.length === 1)
-                    {
-                        pro.push(FileAPI.download(data.file,this.fullPath));
-                    }
+                  //  console.log(data);
+                    this.$nextTick(()=>{
+                        let data = this.$store.state.selected;
+                        let pro = [];
+                   /* if (data.file.length >= 1)
+                    {*/
+                        pro.push(FileAPI.download({files:data.file,folders:data.folder},this.fullPath));
+                    // }
+                   // console.log(data.file);
                     Promise.all(pro).then((resolve)=>{
                         //this.selectopen.move = false;
-                       // this.$store.commit("storeNew",{key:"closedialog",data:true});
-                       // this.$nextTick(()=>this.$store.commit("storeNew",{key:"closedialog",data:false}));
-                       // sessionStorage.clear();
-                      //  this.$store.commit("storeNew",{key:"refresh",data:true});
+                        // this.$store.commit("storeNew",{key:"closedialog",data:true});
+                        // this.$nextTick(()=>this.$store.commit("storeNew",{key:"closedialog",data:false}));
+                        // sessionStorage.clear();
+                        //  this.$store.commit("storeNew",{key:"refresh",data:true});
                         console.log(resolve[0]);
                         this.isdownload = true;
-                         this.herf = "http://" + resolve[0].path;
-                         this.downloadname = resolve[0].name;
-                         this.$nextTick(()=>{
-                             this.$refs.downloadfile.click();
-                             this.isdownload = false;
-                         });
+                        this.herf = "http://" + resolve[0].path;
+                        this.downloadname = resolve[0].name;
+                        this.$nextTick(()=>{
+                            this.$refs.downloadfile.click();
+                            this.isdownload = false;
+                        });
 
 
                     },(reject)=>{
                         console.log("failed");
                     });
+                    }
+                );
+
                 },
                 opencreate()
                 {
@@ -284,10 +296,12 @@
                 },
                 opendelete()
                 {
-                    let data = this.$store.state.selected;
-                    let all = data.file.length + data.folder.length;
-                    this.dialog.msg = `确认删除${all}个文件？`;
-                    this.selectopen.delete = true;
+                    this.$nextTick(()=>{
+                        let data = this.$store.state.selected;
+                        let all = data.file.length + data.folder.length;
+                        this.dialog.msg = `确认删除${all}个文件？`;
+                        this.selectopen.delete = true;
+                    });
                     //this.$nextTick(()=>this.selectopen.delete = false);
                 },
                 onrename ()
@@ -322,16 +336,10 @@
                     list.forEach(async (value,index)=>{
                         let allleng = alllength+index;
                         this.$store.commit('filecancel',{key:allleng,data:false});
+                        this.$store.commit('storefilestatus',{key:allleng,data:'waiting calc'});
                         try{
-                            //console.log(value.webkitRelativePath.lastIndexOf("/"));
                             value.path = dir + "/" + value.webkitRelativePath.slice(0,value.webkitRelativePath.lastIndexOf("/"));
-                            this.$store.commit('storefilestatus',{key:allleng,data:'calc md5'});
-                            value.md5 = await md5.calcfilemd5(value,allleng);
-                            this.$store.commit('storefilestatus',{key:allleng,data:'calc sha1'});
-                            value.silce_sha1 = await sha1.sha1File(value);
-                            this.$store.commit('storefilestatus',{key:allleng,data:'waiting upload'});
-                            //FileAPI.uploadfile(allleng,value);
-                            this.ques.push(allleng);
+                            this.ques.calcpush(allleng);
                         }
                         catch(err)
                         {

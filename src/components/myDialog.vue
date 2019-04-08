@@ -2,7 +2,7 @@
     <mu-dialog title="Dialog" width="360" :open.sync="open" :overlay-close="false" :esc-press-close="false">
         <span slot="title">{{dialog.name}}</span>
         {{dialog.msg}}
-        <mu-button slot="actions" flat color="primary" @click="closedialog()" v-if="confirm">Cancel</mu-button>
+        <mu-button slot="actions" flat color="primary" @click="closedialog(false)" v-if="confirm">Cancel</mu-button>
         <mu-button slot="actions" flat color="primary" @click="closedialog(dialog.path)" >Ok！</mu-button>
     </mu-dialog>
 </template>
@@ -67,7 +67,8 @@
                 closedialog(path = undefined)
                 {
                     //console.log(path);
-                    this.action();
+                    if (path !== false)
+                        this.action();
                     this.$emit("update:open",false);
                     //this.dialog.open = false;
                     !!path  ? this.$router.push(path):'';

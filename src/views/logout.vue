@@ -13,6 +13,7 @@
             let url = 'auth/logout';
             let ajax = new myajax();
             let isrole = !!this.$store.state.role;
+            console.log(this.$store.state.login);
             if (this.$store.state.login === true)
             {
                 ajax.ajax(url,{},(response)=>{
@@ -44,7 +45,7 @@
                     this.$router.push('login');
                 },'post').then(()=>{
                     if (isrole)
-                        location.reload()
+                        location.reload();
                     });
             }
             else

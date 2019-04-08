@@ -47,6 +47,7 @@ let state = {
     fileuploading:[],
     filecancel:[],
     indoing:0,
+    calcindoing:0,
 };
 
 let getters = {
@@ -103,7 +104,7 @@ let getters = {
         let all = state.filestatus.length ;
         let suc = 0;
         state.filestatus.forEach((val)=>{
-            val === 'success' ? suc++:'';
+            val.indexOf('success') !== -1 ? suc++:'';
         });
         return suc;
     },
@@ -235,6 +236,15 @@ let mutations = {
     minusload(state)
     {
         state.indoing --;
+    },
+    calcplus(state)
+    {
+        state.calcindoing ++;
+    },
+
+    calcminus(state)
+    {
+        state.calcindoing --;
     }
 
 };
