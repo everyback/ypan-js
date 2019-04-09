@@ -36,7 +36,7 @@
 
 <script>
     export default {
-        name: "selectshare",
+        name: "selectshareno",
         props:{
             action:{
                 type:Function,

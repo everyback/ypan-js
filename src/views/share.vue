@@ -1,5 +1,9 @@
 <template>
-    <p>this is share</p>
+    <div>
+        <!--<p>this is share</p>-->
+        <router-view />
+
+    </div>
 </template>
 
 <script>
@@ -8,8 +12,8 @@
         created()
         {
             this.$store.commit("storeNew",{key:"title_name",data:"Share"});
-
         },
+
     }
 </script>
 

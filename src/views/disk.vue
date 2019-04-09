@@ -42,7 +42,8 @@
                </mu-paper>
                <folder :action="()=>move()" :open.sync="selectopen.move" />
                <folder :action="()=>copy()" :open.sync="selectopen.copy"  />
-               <selectshare  :open.="selectopen.share"   />
+               <selectshare :open.sync="selectopen.share" />
+               <!--<selectshare  :open.="selectopen.share"   />-->
                <my-dialog   :action="()=>todelete()" :open.sync="selectopen.delete"  :name="dialog.name" :message="dialog.msg" :confirm="true" />
            </div>
            <mu-paper style="margin-top: 20px;min-height:670px;" :z-depth="5">
@@ -76,13 +77,13 @@
     import md5 from "../plugings/md5"
     import sha1 from "../plugings/sha1"
     import queue from "../plugings/queue"
-    import Share from "./share";
-    import Selectshare from "../components/share";
+    // import Share from "./share";
+    import Selectshare from "../components/selectShare";
 
     export default {
         components: {
             Selectshare,
-            Share,
+            // Share,
             MyDialog,
             Folder,
             Pan,
@@ -357,7 +358,7 @@
                 },
                 openshare()
                 {
-
+                    this.selectopen.share = true;
                 }
 /*
                 getfile($event)

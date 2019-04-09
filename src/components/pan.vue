@@ -1,12 +1,10 @@
 <template>
     <div  class="pan" ondragstart="return false" @mouseover.self="outover()"  >
-        <!--<transition-group appear  name="fadeLeft" mode="out-in" :duration="300" tag="div" >-->
             <router-link v-if="!(fullPath === '/')" ondragstart="return false" class="text-left in-block returnone" :to="{ name: 'dir', query: { path: getpath(paths.length -1 ) }}"> 返回上一层 </router-link>
             <mu-breadcrumbs class="left-leave" >
                 <mu-icon value="chevron_right" slot="divider"/>
                 <mu-breadcrumbs-item v-for="(value,index) in this.$store.state.path" :key="value + '/'+index" :to="{ name: 'dir', query: { path: getpath(index + 1) }}" :disabled=" index === paths.length - 1 "  >{{value}}</mu-breadcrumbs-item>
             </mu-breadcrumbs>
-        <!--</transition-group>-->
         <transition appear  name="zoom" mode="out-in" :duration="300" >
         <dl style="margin: auto;margin-bottom: 5px; background-color: rgba(230,231,230,0.1);width:98%;"  >
             <dt style="border-bottom:1px solid #bbdefb;">
@@ -57,9 +55,7 @@
                             </span>
                             <span class="text-left in-block filename-width " @click.self.stop="set(index)" v-if="selectrename !== index" >
                                 <mu-icon class="icon" size="24" value="folder" color="amber200"  />
-                                 <!--<mu-tooltip class="hidename" style="width:80%" placement="bottom" :content="value.folder_name">-->
                                      <router-link class="left-margin hidename" ondragstart="return false"  :to="{ name: 'dir', query: { path: fullPath+'/'+ value.folder_name }}">{{value.folder_name}}</router-link>
-                                <!--</mu-tooltip>-->
                             </span>
                             <span class="text-left in-block filename-width"  v-else>
                                 <mu-text-field class="left-margin phone" v-model="new_name" :placeholder="value.folder_name" />
@@ -89,7 +85,6 @@
                                         <span>{{value.file_name}}</span>
                                     </mu-tooltip>
                                 </div>
-                                <!--<span class="hidename " >  </span>-->
                             </div>
                             <span class="text-left in-block filename-width "  v-else>
                                 <mu-text-field class="left-margin phone" v-model="new_name" :placeholder="value.file_name" />

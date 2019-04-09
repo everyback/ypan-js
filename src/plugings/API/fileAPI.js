@@ -60,7 +60,6 @@ class fileAPI{
         return new Promise((resolve,reject)=>{
             let url = 'file/delete';
             let ajax = new myajax();
-
             ajax.ajax(url,{filename:datas,dir},(response)=>{
                 console.log(response);
                 resolve();

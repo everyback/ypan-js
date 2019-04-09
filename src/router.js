@@ -4,8 +4,9 @@ import Home from './views/Home.vue'
 import dirpan from '@/components/pan'
 import store from './store'
 Vue.use(Router);
-import testtree from '@/components/Folder/folder'
+// import testtree from '@/components/Folder/folder'
 import getrole from "@/plugings/API/getrolerouter"
+import test from './components/selectShare'
 
 const Login = resolve('Login');
 const Mindex = resolve('Mindex');
@@ -19,6 +20,8 @@ const disk = resolve('disk');
 const setting = resolve('setting');
 const share =resolve('share');
 const myshare = resolve('myshare');
+const sharecontent = resolve("sharecontent");
+const publicshare = resolve("publicshare");
 // const dirpan = resolve('',"@components/pan");
 
 function resolve(name,fullpath = null)
@@ -54,7 +57,7 @@ const router = new Router({
                 component: disk,
                 children:[
                     {
-                        path: 'dir/:path?',
+                        path: 'dir/:path',
                         name:'dir',
                         component: dirpan,
                     },
@@ -98,7 +101,7 @@ const router = new Router({
         {
             path: '/test',
             name: 'test',
-            component: testtree,
+            component: test,
         },
         {
             path: '/setting',
@@ -107,8 +110,24 @@ const router = new Router({
         },
         {
             path: '/share',
-            name: 'share',
             component: share,
+            children:[
+                {
+                    path: '/',
+                    name: 'publicshare',
+                    component: publicshare,
+                },
+                {
+                    path: 'link/:sharepath',//链接具体内容
+                    name: 'link',
+                    component: sharecontent,
+                },
+                {
+                    path: 'public',
+                    redirect:"/share/",
+                },
+            ],
+
         },
         {
             path:"/myshare",
@@ -149,8 +168,7 @@ const router = new Router({
         },
         {
             path: '*',
-            name: 'share',
-            component: share,
+            redirect: '/setting',
         },
     ]
 });

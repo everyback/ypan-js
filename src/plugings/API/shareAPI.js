@@ -24,19 +24,19 @@ class shareAPI{
         });
     };
 
-    static create()
+    static create({file,folder},ispriv,activetime,dir)
     {
         return new Promise((resolve,reject)=>{
-            let url = 'share/delete';
+            let url = 'share/create';
             let ajax = new myajax();
 
-            ajax.ajax(url,{filename:datas,dir},(response)=>{
+            ajax.ajax(url,{filename:file,foldername:folder,private:ispriv,activetime,dir},(response)=>{
                 console.log(response);
-                resolve();
+                resolve(response.data.success);
             },(err)=>{
                 console.log(err.response);
                 reject();
-            },'delete')
+            },'post')
         });
     };
 
@@ -78,4 +78,4 @@ class shareAPI{
 }
 
 
-export default fileAPI;
+export default shareAPI;
