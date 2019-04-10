@@ -1,13 +1,540 @@
 <template>
-    <p> show list </p>
+    <div  class="pan" ondragstart="return false" @mouseover.self="outover()"  >
+        <!--<transition-group appear  name="fadeLeft" mode="out-in" :duration="300" tag="div" >-->
+        <transition appear  name="zoom" mode="out-in" :duration="300" >
+            <dl style="margin: auto;margin-bottom: 5px; background-color: rgba(230,231,230,0.1);width:98%;"  >
+                <dt style="border-bottom:1px solid #bbdefb;">
+                    <ul class="ul-head">
+                        <li class="li-head" style="width: 40px;position: relative;top:8px">
+                            <mu-checkbox   @change="to_selectall()"  :checked-icon="!!selectall  ? 'indeterminate_check_box' :'check_box'"> </mu-checkbox>
+                        </li>
+                        <li class="li-head filename-width" @click="tosort('name')">
+                            分享文件名
+                        </li>
+                        <li class="li-head size-width">
+                            分享用户
+                        </li>
+                        <li class="li-head time-width" >
+                            分享时间
+                        </li>
+                    </ul>
+                </dt>
+                <mu-load-more @refresh="refresh" :refreshing="refreshing" :loading="loading" @load="load" style="overflow: auto;height: 720px ;"  @scroll="lazyload($event)" >
+                    <div v-if="datas.length !== 0" ref="toscroll" id="scr"  >
+                        <dd   v-for="(value,index) in datas" :key="value + '/'+index " class="dds" :class="[selects[index] ? 'selected':'',hoverindex === index ? 'dds-hover':'']"  @mouseover="isonover(index)"  @mouseleave="isonleave(index)" >
+                            <div  @dblclick="to(value.share_path)" >
+                            <span class="text-left in-block " style="width: 40px;position: relative;top:8px">
+                                <mu-checkbox v-model="selects[index]" />
+                            </span>
+                                <span class="text-left in-block filename-width " @click.self.stop="set(index)"  >
+                                <mu-icon class="icon" size="24" value="insert_drive_file" color="#b3e5fc"  />
+                                    <!--<mu-tooltip class="hidename" style="width:80%" placement="bottom" :content="value.folder_name">-->
+                                     <router-link class="left-margin hidename" ondragstart="return false"  :to="'/share/link/' + value.share_path">{{value.show_name}}</router-link>
+                                    <!--</mu-tooltip>-->
+                            </span>
+                            <span class="text-left in-block size-width" @click.self.stop="set(index)">
+                                    {{value.user_name}}
+                            </span>
+                            <span class="text-left in-block time-width" @click.self.stop="set(index)">
+                                {{ format(value.created_at)}}
+                             </span>
+                            </div>
+                            <span class=" in-block" style="position: absolute;left: 45%;top:0;" v-if="hoverindex === index" >
+                                <mu-button icon color="error" small class="name-button" @click="godownload(index)">
+                                        <mu-icon value="cloud_download" />
+                                </mu-button>
+                            </span>
+                        </dd>
+                    </div>
+                    <div v-else>
+                        no share(s)
+                    </div>
+                </mu-load-more>
+            </dl>
+        </transition>
+        <a :href="herf" :download="downloadname" v-show="false"  ref="downloadfile">4</a>
+    </div>
+
 </template>
 
 <script>
+    import {mapGetters} from 'vuex'
+    import myajax from './../plugings/API/myajax'
+    import formats from './../plugings/formats'
+    import FolderAPI from '../plugings/API/folderAPI'
+    import FileAPI from '../plugings/API/fileAPI'
+    import ShareAPI from "../plugings/API/shareAPI"
+
     export default {
-        name: "publicshare"
+
+        name: "publicshare",
+        props:{
+            delete:{
+                type:Function,
+                default:()=>{},
+            },
+        },
+        data()
+        {
+            return {
+                refreshing: false,
+                loading: false,
+                text: 'List',
+                page:1,
+                pagesize:20,
+                datas:[],
+                selects:[],
+                all:0,
+                new_name:'',
+                test:false,
+                end:false,
+                firstin:true,
+                filelist:false,
+                over:false,
+                openlist:false,
+                hoverindex:-1,
+                // rename: [],
+                herf:'',
+                downloadname:'',
+                isdownload:false,
+
+            }
+        },
+        created()
+        {
+            this.datas = [];
+            this.$store.commit("storeNew",{key:"title_name",data:"Public Share"});
+            // if (this.$store.state.path.length === 1 && this.$route.query.path)
+            // {
+/*                let arr = this.$route.query.path.split('/');
+                arr = arr.filter((val)=>{
+                    return !(val === "" || val === "/");
+                });
+                arr.unshift("/");
+                if (arr.length !== 0 )
+                {
+                    this.$store.commit('changePath',arr)
+                }
+            }
+            if (sessionStorage.getItem(this.fullPath) && JSON.parse(sessionStorage.getItem(this.fullPath)).datas.length !== 0 )
+            {
+                this.page = JSON.parse(sessionStorage.getItem(this.fullPath)).page;
+            }
+            if (!this.$route.query.path && !this.$route.query.search)
+            {
+                this.listfile(this.page);
+            }
+            else if (this.$route.query.path )
+            {*/
+                this.listfile(this.page,this.getpath());
+           /* }
+            else if (this.$route.query.search)
+            {
+                console.log("search");
+                console.log(this.$route.query.search);
+            }*/
+
+
+        },
+        computed:
+            {
+                ...mapGetters(['fullPath','paths',"fresh","cnfolder","isrename"]),
+                /* key() {
+                     return this.$route.name !== undefined? this.$route.name +new Date(): this.$route +new Date()
+                 },*/
+                testa()
+                {
+                    return this.$store.state.path.join('/');
+                },
+                path()
+                {
+                    let arr = this.$store.state.path;
+                    arr = arr.filter((val)=>{
+                        return !(val === "" || val === "/");
+                    });
+                    arr.unshift("");
+                    return arr.join('/');
+                },
+                selectall()
+                {
+                    return this.selects.every((val)=>{
+                        return val
+                    })
+                },
+
+            },
+        watch:{
+            path(val)
+            {
+                // console.log(val);
+                // console.log("aaaaaaaaaaa");
+                this.listfile(this.page,val);
+            },
+            selects(val)
+            {
+                let file = [];
+                let folder = [];
+                let data = {};
+                this.rename = [];
+                this.selects.forEach((val, index) => {
+                    if (val) {
+                        this.datas[index].is_file ? file.push(this.datas[index].file_name) : folder.push(this.datas[index].folder_name);
+                        this.rename.push(index);
+                    }
+                });
+
+                data = {folder, file};
+                this.$store.commit("storeNew",{key:"selected",data});
+            },
+            fresh(val)
+            {
+                if (val)
+                {
+                    this.listfile(1,this.getpath());
+                    this.$store.commit("storeNew",{key:"refresh",data:false});
+                    this.end = false;
+                }
+            },
+            cnfolder(val)
+            {
+                //console.log("a.scrollTdfgdfgdfgop");
+                let a = document.querySelector('#scr');
+                console.log(a.scrollTop);
+                if (val)
+                    a.scrollTop = 0;
+                //   document.documentElement.scrollTop = 0;
+            },
+            isrename(val)
+            {
+                //  this.
+                if (this.rename.length === 1)
+                {
+                    this.selectrename = this.rename[0];
+                }
+                else
+                {
+                    this.rename = -1;
+                }
+                this.$store.commit("storeNew",{key:"rename",data:false});
+            },
+
+
+        },
+        methods:{
+            refresh () {
+                this.refreshing = true;
+                sessionStorage.removeItem(this.getpath());
+                this.page = 1;
+                this.listfile(1).then((result)=>{
+                    this.refreshing = false;
+                    this.end = false;
+                    //  this.page = 1;
+                },(reject)=>{
+                    this.refreshing = false;
+                });
+
+            },
+            load () {
+                this.loading = true;
+                if (!this.end)
+                {
+                    this.listfile(this.page++).then(()=>{
+                        this.loading = false;
+                    });
+                }
+                else {
+                    this.loading = false;
+                }
+                return 0;
+            },
+            intofolder(foldername)
+            {
+                let dir = this.fullPath.length === 1 ? this.fullPath + foldername : this.fullPath+'/'+foldername;
+                //  console.log(foldername);
+                this.page = 1;
+                this.listfile(1,dir,foldername);
+
+            },
+            format(time)
+            {
+                return formats.format(time);
+            },
+            bytesToSize(size)
+            {
+                return formats.bytesToSize(size);
+            },
+            listfile(page ,dir = null,foldername = null)
+            {
+                return new Promise((resolve,reject)=>{
+                   ShareAPI.publicshare(page).then((resolves)=>{
+                       if (page === 1) {
+                           this.datas = [];
+                       }
+                       if (page === 1)
+                       {
+                           this.selects = Array(this.datas.length).fill(false);
+                       }
+                       else {
+                           let lens = this.datas.length - this.selects.length;
+                           this.selects = this.selects.concat(Array(lens).fill(false));
+                       }
+                       if (resolves.length === 0)
+                       {
+                           this.end = true;
+                       }else
+                       {
+                           console.log(resolves);
+                           this.datas = this.datas.concat(resolves);
+                       }
+
+                       resolve();
+                   });
+
+                });
+            },
+            getpath(index = null)
+            {
+                let arr = this.$store.state.path;
+                arr = arr.filter((val)=>{
+                    return !(val === "" || val === "/");
+                });
+                arr.unshift("");
+                if (index)
+                {
+                    arr = arr.slice(0,index);
+                    return arr.join('/');
+                }
+                if (arr.length === 1)
+                {
+                    return '/';
+                }
+                return arr.join('/');
+            },
+            tonot()
+            {
+                return false;
+            },
+            to_selectall()
+            {
+                if (this.selectall)
+                {
+                    this.selects = Array(this.datas.length).fill(false)
+                }
+                else
+                {
+                    this.selects = Array(this.datas.length).fill(true);
+                }
+            },
+            set(index)
+            {
+                this.selects = Array(this.datas.length).fill(false);
+                this.$set(this.selects,index,true);
+
+                this.openlist = false;  //修改层次
+                this.hoverindex = index;
+            },
+            createfolder()
+            {
+                let foldername = this.new_name;
+                let dir = this.fullPath;
+                FolderAPI.createfile(foldername,dir).then((resolve)=>{
+                    this.$store.commit("storeNew",{key:'createnewfolder',data:false});
+                    this.new_name = '';
+                    sessionStorage.removeItem(dir);
+                    this.listfile(1);
+                },(reject)=>{
+                    console.log(reject);
+                });
+            },
+            cancelcreate()
+            {
+                this.$store.commit("storeNew",{key:'createnewfolder',data:false});
+                this.new_name = '';
+            },
+            to(sharepath)
+            {
+                this.$router.push("/share/link/"+sharepath);
+            },
+            tosort(by)
+            {
+                console.log("fdgdfgd");
+                if (this.filelist)
+                {
+                    this.datas = this.datas.sort((a,b)=>{return toString((b["folder_name"])).localeCompare( (a["folder_name"])) });
+                    this.datas = this.datas.sort((a,b)=>{return toString((b["file_name"])).localeCompare( (a["file_name"])) });
+                }
+                else
+                {
+                    this.datas = this.datas.sort((a,b)=>{return toString((a["folder_name"])).localeCompare( (b["folder_name"]))});
+                    this.datas = this.datas.sort((a,b)=>{return toString((a["file_name"])).localeCompare( (b["file_name"])) });
+                }
+                this.filelist = !this.filelist;
+                /*(a,b)=>{return (a["folder_name"||"file_name"]).localeCompare(b["folder_name"||"file_name"])}*/
+            },
+            isonover(index)
+            {
+                if (!this.openlist)
+                {
+                    this.hoverindex = index;
+
+                }
+                // this.openlist = false;
+            },
+            isonleave(index)
+            {
+                if (!this.openlist)
+                {
+                    this.hoverindex = -1;
+                    this.openlist = false;
+                }
+            },
+            outover()
+            {
+                if (!this.openlist)
+                {
+                    this.hoverindex = -1;
+                    this.openlist = false;
+                }
+            },
+            isoutside()
+            {
+                this.openlist = false;
+                this.hoverindex = -1 ;
+            },
+            godownload(index)
+            {
+                ShareAPI.download({folder:[],file:[]},'/',this.datas[index].share_path).then((resolve)=>{
+                    console.log(resolve);
+                    this.isdownload = true;
+                    this.herf = "http://" + resolve.path;
+                    this.downloadname = resolve.name;
+                    this.$nextTick(()=>{
+                        this.$refs.downloadfile.click();
+                        this.isdownload = false;
+                    });
+                });
+            }
+        }
     }
 </script>
 
 <style scoped>
 
+    .pan
+    {
+        user-select: none;
+    }
+    ul li{
+        list-style: none;
+    }
+
+    .ul-head{
+        padding-left: 0;
+    }
+    .in-block{
+        display: inline-block;
+        user-select: none;
+        vertical-align:top;
+    }
+    .filename-width{
+        width: 51%;
+    }
+
+    .size-width{
+        width: 17%;
+    }
+
+    .time-width{
+        width: 24%;
+    }
+    .text-left{
+        text-align: left;
+    }
+
+    .li-head{
+        display: inline-block;
+        text-align: left;
+        vertical-align: bottom;
+    }
+    .returnone{
+        margin-top: 0.9rem;
+        margin-left: 1rem;
+        width: 5rem;
+        float: left;
+    }
+    .dds{
+        height: 3em;
+        line-height:3em;
+        margin-left: 0;
+        position: relative;
+        /*font-size: 0;*/
+        -webkit-text-size-adjust:none;
+        /*border-top: 1px solid black;*/
+        /*overflow:hidden;*/
+        white-space:nowrap;
+        border-bottom:1px solid #e3f2fd;
+    }
+    .hidename{
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        overflow:hidden;
+        max-width:650px;
+    }
+    /* .dds:hover{
+         background-color: #e0e0e0;
+     }*/
+    .dds-hover{
+        background-color: #e0e0e0;
+    }
+    .name-button
+    {
+        top:3px;
+        margin-left: 15px;
+    }
+    .icon{
+        /*top: 10px;*/
+        transform: translateY(6px);
+    }
+    .left-margin{
+        margin-left: 10px;
+    }
+    .selected{
+        background-color: #f5f5f5;
+    }
+
+    @media screen and ( max-aspect-ratio:10/16	)
+    {
+        .filename-width{
+            width: 30%;
+            text-overflow:ellipsis;
+        }
+        .size-width{
+            width: 15%;
+        }
+        .time-width{
+            width:30%;
+            text-overflow:ellipsis;
+            white-space: nowrap;
+        }
+        .dds{
+            height: 6em;
+            line-height:6em;
+            margin-left: 0;
+            /*border-top: 1px solid black;*/
+            border-bottom:1px solid #e3f2fd;
+        }
+        .returnone{
+            margin-top: 1.8rem;
+            margin-left: 1rem;
+            width: 5rem;
+            float: left;
+        }
+        .phone{
+            width: 3rem;
+        }
+    }
+
+
+
 </style>
+

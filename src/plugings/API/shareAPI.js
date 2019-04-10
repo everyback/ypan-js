@@ -1,26 +1,25 @@
 
 import myajax from './myajax'
 import store from '../../store'
+import costum from './costum'
 
 
 class shareAPI{
 
 
-    static todelete(datas,dir)
+    static todelete(datas)
     {
         return new Promise((resolve,reject)=>{
-            let url = 'file/delete';
+            let url = 'share/delete';
             let ajax = new myajax();
 
-            ajax.ajax(url,{filename:datas,dir},(response)=>{
+            ajax.ajax(url,{sharepath:datas},(response)=>{
                 console.log(response);
                 resolve();
             },(err)=>{
                 console.log(err.response);
                 reject();
             },'delete')
-        }).then(()=>{
-            costum.me()
         });
     };
 
@@ -40,31 +39,32 @@ class shareAPI{
         });
     };
 
-
-    static userlist()
+    static copy({file,folder},sharepath,dir,dir_to)
     {
         return new Promise((resolve,reject)=>{
-            let url = 'share/userlist';
+            let url = 'share/copy';
             let ajax = new myajax();
 
-            ajax.ajax(url,{filename:datas,dir},(response)=>{
+            ajax.ajax(url,{filename:file,foldername:folder,sharepath,dir,dir_to},(response)=>{
                 console.log(response);
-                resolve();
+                resolve(response.data.success);
             },(err)=>{
                 console.log(err.response);
                 reject();
-            },'delete')
+            },'post').then(()=>{
+                costum.me()
+            })
         });
-    }
+    };
 
-    static download(datas,dir)
+    static download(datas,dir,sharepath)
     {
 
         return new Promise((resolve,reject)=>{
             //let url = 'createdownload';
-            let url = 'createpath';
+            let url = 'share/createdownload';
             let ajax = new myajax();
-            ajax.ajax(url,{filename:datas.files,foldername:datas.folders,dir},(response)=>{
+            ajax.ajax(url,{filename:datas.files,foldername:datas.folders,dir,sharepath},(response)=>{
                 resolve(response.data.success);
             },(err)=>{
                 console.log(err.response);
@@ -73,6 +73,41 @@ class shareAPI{
 
         });
     }
+
+    static publicshare(page)
+    {
+        return new Promise((resolve,reject)=>{
+            //let url = 'createdownload';
+            let url = 'share/publiclist';
+            let ajax = new myajax();
+            ajax.ajax(url,{page},(response)=>{
+                resolve(response.data.success);
+            },(err)=>{
+                console.log(err.response);
+                reject();
+            },'get')
+
+        });
+    }
+
+    static usershare(page)
+    {
+        return new Promise((resolve,reject)=>{
+            //let url = 'createdownload';
+            let url = 'share/userlist';
+            let ajax = new myajax();
+            ajax.ajax(url,{page},(response)=>{
+                resolve(response.data.success);
+            },(err)=>{
+                console.log(err.response);
+                reject();
+            },'get')
+
+        });
+    }
+
+
+
 
 
 }

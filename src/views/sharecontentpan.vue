@@ -2,11 +2,11 @@
 
 
 
-    <div  class="pan" @mouseover.self="outover()"  >
-        <router-link v-if="!(fullPath === '/')" ondragstart="return false" class="text-left in-block returnone" :to="{ name: 'dir', query: { path: getpath(paths.length -1 ) }}"> 返回上一层 </router-link>
+    <div  class="pan"  >
+        <router-link v-if="!(fullsharefolderpath === '/')" ondragstart="return false" class="text-left in-block returnone" :to="{ name: 'sharecontentpan', query: { path: getpath(paths.length -1 ) }}"> 返回上一层 </router-link>
         <mu-breadcrumbs class="left-leave" >
             <mu-icon value="chevron_right" slot="divider"/>
-            <mu-breadcrumbs-item v-for="(value,index) in this.$store.state.path" :key="value + '/'+index" :to="{ name: 'dir', query: { path: getpath(index + 1) }}" :disabled=" index === paths.length - 1 "  >{{value}}</mu-breadcrumbs-item>
+            <mu-breadcrumbs-item v-for="(value,index) in this.$store.state.path" :key="value + '/'+index" :to="{ name: 'sharecontentpan', query: { path: getpath(index + 1) }}" :disabled=" index === paths.length - 1 "  >{{value}}</mu-breadcrumbs-item>
         </mu-breadcrumbs>
         <transition appear  name="zoom" mode="out-in" :duration="300" >
             <dl style="margin: auto;margin-bottom: 5px; background-color: rgba(230,231,230,0.1);width:98%;"  >
@@ -27,90 +27,48 @@
                     </ul>
                 </dt>
                 <mu-load-more @refresh="refresh" :refreshing="refreshing" :loading="loading" @load="load" style="overflow: auto;height: 580px ;"  @scroll="lazyload($event)" >
-                    <dd  v-if="cnfolder" class="dds"  >
-                        <div>
-                        <span class="text-left in-block " style="width: 40px;position: relative;top:8px">
-                            <mu-checkbox v-model="test" disabled />
-                        </span>
-                            <span class="text-left in-block filename-width">
-                            <mu-icon class="icon" size="24" value="folder" color="amber200"  />
-                            <mu-text-field class="left-margin phone" v-model="new_name" placeholder="please input folder name" > </mu-text-field>
-                            <mu-button icon color="success" small class="name-button" @click="createfolder()">
-                            <mu-icon value="done" />
-                            </mu-button>
-                            <mu-button icon color="error" small class="name-button" @click="cancelcreate()">
-                                <mu-icon value="clear" />
-                            </mu-button>
-                        </span>
-                            <span class="text-left in-block size-width">
-                            --
-                        </span>
-                            <span  class="text-left in-block time-width">
-                            now
-                        </span>
-                        </div>
-                    </dd>
                     <div v-if="datas.length !== 0" ref="toscroll" id="scr"  >
                         <dd   v-for="(value,index) in datas" :key="value + '/'+index " class="dds" :class="[selects[index] ? 'selected':'',hoverindex === index ? 'dds-hover':'']"  @mouseover="isonover(index)"  @mouseleave="isonleave(index)" >
-                            <div v-if="value.is_file === false" @dblclick="to(value.folder_name)"  >
-                            <span class="text-left in-block " style="width: 40px;position: relative;top:8px">
-                                <mu-checkbox v-model="selects[index]" />
-                            </span>
-                                <span class="text-left in-block filename-width " @click.self.stop="set(index)" v-if="selectrename !== index" >
+                            <div v-if="value.isfile === 0" @dblclick="to(value.name)"  >
+                                <span class="text-left in-block " style="width: 40px;position: relative;top:8px">
+                                    <mu-checkbox v-model="selects[index]" />
+                                </span>
+                                <span class="text-left in-block filename-width " @click.self.stop="set(index)"  >
                                 <mu-icon class="icon" size="24" value="folder" color="amber200"  />
-                                     <router-link class="left-margin hidename" ondragstart="return false"  :to="{ name: 'dir', query: { path: fullPath+'/'+ value.folder_name }}">{{value.folder_name}}</router-link>
-                            </span>
-                                <span class="text-left in-block filename-width"  v-else>
-                                <mu-text-field class="left-margin phone" v-model="new_name" :placeholder="value.folder_name" />
-                                <mu-button icon color="success" small class="name-button" @click="torename()">
-                                    <mu-icon value="done" />
-                                </mu-button>
-                                <mu-button icon color="error" small class="name-button" @click="cancelrename()">
-                                    <mu-icon value="clear" />
-                                </mu-button>
-                            </span>
+                                     <router-link class="left-margin hidename"   :to="{ name: 'sharecontentpan', query: { path: fullsharefolderpath+'/'+ value.name }}">{{value.name}}</router-link>
+                                </span>
                                 <span class="text-left in-block size-width" @click.self.stop="set(index)">
-                                --
-                            </span>
+                                    --
+                                </span>
                                 <span class="text-left in-block time-width" @click.self.stop="set(index)">
-                                {{ format(value.updated_at)}}
-                             </span>
-                            </div>
+                                    {{ value.updated_at}}
+                                 </span>
+                                </div>
                             <div v-else>
                                 <div class="text-left in-block " style="width: 40px;position: relative;top:8px">
                                     <div>
                                         <mu-checkbox v-model="selects[index]" />
                                     </div>
                                 </div>
-                                <div class="text-left in-block filename-width  "  @click.self.stop="set(index)" v-if="selectrename !== index"  >
+                                <div class="text-left in-block filename-width  "  @click.self.stop="set(index)"  >
                                     <div  class="hidename" >
-                                        <mu-tooltip class="hidename" style="width:80%" placement="bottom" :content="value.file_name">
-                                            <span>{{value.file_name}}</span>
+                                        <mu-tooltip class="hidename" style="width:80%" placement="bottom" :content="value.name">
+                                            <span>{{value.name}}</span>
                                         </mu-tooltip>
                                     </div>
                                 </div>
-                                <span class="text-left in-block filename-width "  v-else>
-                                <mu-text-field class="left-margin phone" v-model="new_name" :placeholder="value.file_name" />
-                                <mu-button icon color="success" small class="name-button" @click="torename()">
-                                    <mu-icon value="done" />
-                                </mu-button>
-                                <mu-button icon color="error" small class="name-button" @click="cancelrename()">
-                                    <mu-icon value="clear" />
-                                </mu-button>
-                            </span>
                                 <span class="text-left in-block size-width">
-                                <span > {{bytesToSize(value.file_size)}}</span>
-                            </span>
+                                <span > {{bytesToSize(parseInt(value.size))}}</span>
+                                </span>
                                 <span class="text-left in-block time-width">
-                                {{ format(value.updated_at)}}
-                            </span>
+                                    {{ value.updated_at}}
+                                </span>
                             </div>
                             <span class=" in-block" style="position: absolute;left: 45%;top:0;" v-if="hoverindex === index" >
-                            <mu-button icon color="error" small class="name-button" @click="godownload(index)">
-                                <mu-icon value="cloud_download" />
-                            </mu-button>
-
-                        </span>
+                                <mu-button icon color="error" small class="name-button" @click="godownload(index)">
+                                    <mu-icon value="cloud_download" />
+                                </mu-button>
+                            </span>
                         </dd>
                     </div>
                     <div v-else>
@@ -125,17 +83,42 @@
 <script>
 
     import myajax from './../plugings/API/myajax'
-
+    import {mapGetters} from 'vuex'
+    import formats from './../plugings/formats'
 
     export default {
         name: "sharecontentpan",
+        props:{
+            copy:{
+                type:Function,
+                default:()=>{},
+            },
+            delete:{
+                type:Function,
+                default:()=>{},
+            },
+            code:{
+              type:String,
+              default:'',
+            },
+        },
         data()
         {
             return{
                 sharepath:this.$route.params.sharepath,
+                sharelink:'',
                 page:1,
-                firstin:false,
-
+                firstin:true,
+                refreshing:false,
+                loading:false,
+                end:false,
+                filelist:false,
+                over:false,
+                pagesize:20,
+                datas:[],
+                selects:[],
+                hoverindex:-1,
+                herecode:'',
             }
         },
         beforeCreate()
@@ -144,57 +127,214 @@
             {
                 this.$router.push("/share/");
             }
-        },
-        created()
-        {
 
         },
+        beforeMount()
+        {
+            this.herecode = this.code;
+            this.datas = [];
+            let sharelink = this.sharepath+'_'+this.fullsharefolderpath;
+            this.sharelink = sharelink;
+            if (this.$store.state.sharefolderpath.length === 1 && this.$route.query.path)//比如刷新这种的vuex 的数据失效的情况，需要获取路由内容重新给vuex取值
+            {
+                let arr = this.$route.query.path.split('/');
+                arr = arr.filter((val)=>{
+                    return !(val === "" || val === "/");
+                });
+                arr.unshift("/");
+                if (arr.length !== 0 )
+                {
+                    this.$store.commit('changeShareFolderPath',arr)
+                }
+            }
+            if (sessionStorage.getItem(sharelink) && JSON.parse(sessionStorage.getItem(sharelink)).datas.length !== 0 )//获取缓存页码
+            {
+                this.page = JSON.parse(sessionStorage.getItem(sharelink)).page;
+            }
+            if (!this.$route.query.path && !this.$route.query.search)
+            {
+                this.listfile(this.page);
+            }
+            else if (this.$route.query.path )
+            {
+                this.listfile(this.page,this.getpath());
+            }
+            else if (this.$route.query.search)
+            {
+                console.log("search");
+                console.log(this.$route.query.search);
+            }
+        },
         computed:{
-            ...mapGetters(['fullPath','paths',"fresh","cnfolder","isrename","islogin","userInfo"]),
+            ...mapGetters(['fullsharefolderpath','paths',"fresh","cnfolder","isrename","islogin","userInfo"]),
+            selectall()
+            {
+                return this.selects.every((val)=>{
+                    return val
+                })
+            },
+        },
+        watch:{
+            selects(val)
+            {
+                let file = [];
+                let folder = [];
+                let data = {};
+                this.rename = [];
+                this.selects.forEach((val, index) => {
+                    if (val) {
+                        this.datas[index].isfile ? file.push(this.datas[index].name) : folder.push(this.datas[index].name);
+                        this.rename.push(index);
+                    }
+                });
+
+                data = {folder, file};
+                this.$store.commit("storeNew",{key:"selected",data});
+            },
         },
         methods:
         {
+            refresh () {
+                this.refreshing = true;
+                sessionStorage.removeItem(this.sharelink);
+                this.page = 1;
+                this.listfile(1).then((result)=>{
+                    this.refreshing = false;
+                    this.end = false;
+                    //  this.page = 1;
+                },(reject)=>{
+                    this.refreshing = false;
+                });
+            },
+            load () {
+                this.loading = true;
+                if (!this.end)
+                {
+                    this.listfile(this.page++).then(()=>{
+                        this.loading = false;
+                    });
+                }
+                else {
+                    this.loading = false;
+                }
+                return 0;
+            },
+            getpath(index = null)
+            {
+                let arr = this.$store.state.sharefolderpath;
+                arr = arr.filter((val)=>{
+                    return !(val === "" || val === "/");
+                });
+                arr.unshift("");
+                if (index)
+                {
+                    arr = arr.slice(0,index);
+                    return arr.join('/');
+                }
+                if (arr.length === 1)
+                {
+                    return '/';
+                }
+                return arr.join('/');
+            },
+
+            to_selectall()
+            {
+                if (this.selectall)
+                {
+                    this.selects = Array(this.datas.length).fill(false)
+                }
+                else
+                {
+                    this.selects = Array(this.datas.length).fill(true);
+                }
+            },
+            format(time)
+            {
+                return formats.format(time);
+            },
+            bytesToSize(size)
+            {
+                return formats.bytesToSize(size);
+            },
+            isonover(index)
+            {
+                // if (!this.openlist)
+                // {
+                    this.hoverindex = index;
+
+                // }
+                // this.openlist = false;
+            },
+            isonleave(index)
+            {
+/*                if (!this.openlist)
+                {*/
+                    this.hoverindex = -1;
+/*                    this.openlist = false;
+                }*/
+            },
+
             listfile(page, dir = null, foldername = null) {
                 return new Promise((resolve, reject) => {
                     let url = "share/link/" + this.sharepath;
-                    dir = dir || this.fullPath;
+                    dir = dir || this.fullsharefolderpath;
                     //let gets = [];
-                    if ((sessionStorage.getItem(dir) && JSON.parse(sessionStorage.getItem(dir)).datas.length !== 0) && (page === 1 || this.firstin === true)) {
+                    let showdir = '';
+                    if (dir !== "/")
+                    {
+                        showdir = this.sharepath + '_'+ dir;
+                    }
+                    else
+                    {
+                        showdir = this.sharepath + '_/';
+                    }
+
+                    if (sessionStorage.getItem(this.sharepath+"_code") !== '' ) {
+                        //this.code = sessionStorage.getItem(this.sharepath+"_code");
+                        this.$emit('update:code',sessionStorage.getItem(this.sharepath+"_code"));
+                    }
+
+
+
+                    if ((sessionStorage.getItem(showdir) && JSON.parse(sessionStorage.getItem(showdir)).datas.length !== 0) && (page === 1 || this.firstin === true)) {
                         this.firstin = false;
                         //this.page ++;
-                        this.datas = JSON.parse(sessionStorage.getItem(dir)).datas;
+                        this.datas = JSON.parse(sessionStorage.getItem(showdir)).datas;
                         resolve();
                     } else {
                         let ajax = new myajax();
                         let data = {
                             dir,
                             page,
-                            pagesize: this.pagesize
+                            pagesize: this.pagesize,
+                            code :this.code,
+
                         };
                         ajax.ajax(url, data, (response) => {
-                            //   console.log(response.data);
+                               console.log(response.data);
                             // console.log(this.datas);
                             if (page === 1) {
                                 this.datas = [];
                             }
-                            if (response.data.success[0].length === 0) {
+                            if (response.data.success.data.length === 0) {
                                 this.end = true;
                             }
                             /*else
                        {
 
                        }*/
-                            response.data.success.forEach((value) => {
+                            response.data.success.data.forEach((value) => {
                                 this.datas = this.datas.concat(value);
                             });
                             //   console.log(this.datas);
-                            sessionStorage.setItem(dir, JSON.stringify({datas: this.datas, page}));
+                            sessionStorage.setItem(showdir, JSON.stringify({datas: this.datas, page}));
                             resolve();
                         }, (err) => {
-                            console.log(err.response);
+                            console.log(err);
                         }).then(() => {
                             if (foldername) {
-                                this.$store.commit('pushPath', foldername);
+                                this.$store.commit('pushShareFolderPath', foldername);
                             }
                             console.log(this.selects);
                         });

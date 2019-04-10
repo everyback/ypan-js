@@ -50,7 +50,7 @@
                <!--<dragfiles />-->
                <!--<keep-alive>-->
 
-               <router-view :key="key" :move="()=>openmove()" :copy="()=>opencopy()" :delete="()=>opendelete()"  :download="download"/>
+               <router-view :key="key" :move="()=>openmove()" :copy="()=>opencopy()" :delete="()=>opendelete()"  :download="()=>download()"/>
                <!--</keep-alive>-->
            </mu-paper>
            <upload />
@@ -67,7 +67,7 @@
 
 <script>
     import {mapGetters} from 'vuex'
-    import Pan from "./../components/pan"
+    // import Pan from "./../components/pan"
     import upload from './../components/upload'
     import dragfiles from './../components/dragfiles'
     import Folder from "../components/Folder/folder"
@@ -83,10 +83,10 @@
     export default {
         components: {
             Selectshare,
-            // Share,
+            //Share,
             MyDialog,
             Folder,
-            Pan,
+            // Pan,
             dragfiles,
             upload,
         },
@@ -378,7 +378,9 @@
         flex-flow: row wrap;
         justify-content:flex-start;
         align-items:flex-start;
-        align-content: space-around;
+        align-content: start;
+        position: relative;
+        left: 0;
     }
 
 </style>

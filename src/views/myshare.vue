@@ -1,12 +1,6 @@
 <template>
-    <div  class="pan" ondragstart="return false" @mouseover.self="outover()"  >
+    <div  class="pan"  @mouseover.self="outover()"  >
         <!--<transition-group appear  name="fadeLeft" mode="out-in" :duration="300" tag="div" >-->
-        <router-link v-if="!(fullPath === '/')" ondragstart="return false" class="text-left in-block returnone" :to="{ name: 'dir', query: { path: getpath(paths.length -1 ) }}"> 返回上一层 </router-link>
-        <mu-breadcrumbs class="left-leave" >
-            <mu-icon value="chevron_right" slot="divider"/>
-            <mu-breadcrumbs-item v-for="(value,index) in this.$store.state.path" :key="value + '/'+index" :to="{ name: 'dir', query: { path: getpath(index + 1) }}" :disabled=" index === paths.length - 1 "  >{{value}}</mu-breadcrumbs-item>
-        </mu-breadcrumbs>
-        <!--</transition-group>-->
         <transition appear  name="zoom" mode="out-in" :duration="300" >
             <dl style="margin: auto;margin-bottom: 5px; background-color: rgba(230,231,230,0.1);width:98%;"  >
                 <dt style="border-bottom:1px solid #bbdefb;">
@@ -15,131 +9,80 @@
                             <mu-checkbox   @change="to_selectall()"  :checked-icon="!!selectall  ? 'indeterminate_check_box' :'check_box'"> </mu-checkbox>
                         </li>
                         <li class="li-head filename-width" @click="tosort('name')">
-                            文件名
+                            分享文件名
                         </li>
-                        <li class="li-head size-width">
-                            大小
+                        <li class="li-head read-width">
+                            浏览次数
+                        </li>
+                        <li class="li-head resave-width">
+                            转存次数
+                        </li>
+                        <li class="li-head download-width">
+                            下载次数
+                        </li>
+                        <li class="li-head download-width">
+                            分享形式
                         </li>
                         <li class="li-head time-width" >
-                            修改时间
+                            分享时间
                         </li>
                     </ul>
                 </dt>
-                <mu-load-more @refresh="refresh" :refreshing="refreshing" :loading="loading" @load="load" style="overflow: auto;height: 580px ;"  @scroll="lazyload($event)" >
-                    <dd  v-if="cnfolder" class="dds"  >
-                        <div>
-                        <span class="text-left in-block " style="width: 40px;position: relative;top:8px">
-                            <mu-checkbox v-model="test" disabled />
-                        </span>
-                            <span class="text-left in-block filename-width">
-                            <mu-icon class="icon" size="24" value="folder" color="amber200"  />
-                            <mu-text-field class="left-margin phone" v-model="new_name" placeholder="please input folder name" > </mu-text-field>
-                            <mu-button icon color="success" small class="name-button" @click="createfolder()">
-                            <mu-icon value="done" />
-                            </mu-button>
-                            <mu-button icon color="error" small class="name-button" @click="cancelcreate()">
-                                <mu-icon value="clear" />
-                            </mu-button>
-                        </span>
-                            <span class="text-left in-block size-width">
-                            --
-                        </span>
-                            <span  class="text-left in-block time-width">
-                            now
-                        </span>
-                        </div>
-                    </dd>
+                <mu-load-more @refresh="refresh" :refreshing="refreshing" :loading="loading" @load="load" style="overflow: auto;height: 720px ;"  @scroll="lazyload($event)" >
                     <div v-if="datas.length !== 0" ref="toscroll" id="scr"  >
                         <dd   v-for="(value,index) in datas" :key="value + '/'+index " class="dds" :class="[selects[index] ? 'selected':'',hoverindex === index ? 'dds-hover':'']"  @mouseover="isonover(index)"  @mouseleave="isonleave(index)" >
-                            <div v-if="value.is_file === false" @dblclick="to(value.folder_name)"  >
+                            <div  @dblclick="to(value.share_path)"  @click="showlink(index)"  >
                             <span class="text-left in-block " style="width: 40px;position: relative;top:8px">
                                 <mu-checkbox v-model="selects[index]" />
                             </span>
-                                <span class="text-left in-block filename-width " @click.self.stop="set(index)" v-if="selectrename !== index" >
-                                <mu-icon class="icon" size="24" value="folder" color="amber200"  />
+                                <span class="text-left in-block filename-width " @click="showlink(index)">
+                                <mu-icon class="icon" size="24" value="insert_drive_file" color="#b3e5fc"  />
                                     <!--<mu-tooltip class="hidename" style="width:80%" placement="bottom" :content="value.folder_name">-->
-                                     <router-link class="left-margin hidename" ondragstart="return false"  :to="{ name: 'dir', query: { path: fullPath+'/'+ value.folder_name }}">{{value.folder_name}}</router-link>
+                                <router-link class="left-margin hidename"   :to="'/share/link/' + value.share_path">{{value.show_name}}</router-link>
                                     <!--</mu-tooltip>-->
                             </span>
-                                <span class="text-left in-block filename-width"  v-else>
-                                <mu-text-field class="left-margin phone" v-model="new_name" :placeholder="value.folder_name" />
-                                <mu-button icon color="success" small class="name-button" @click="torename()">
-                                    <mu-icon value="done" />
-                                </mu-button>
-                                <mu-button icon color="error" small class="name-button" @click="cancelrename()">
-                                    <mu-icon value="clear" />
-                                </mu-button>
+                            <span class=" in-block read-width">
+                                {{value.read}}次
                             </span>
-                                <span class="text-left in-block size-width" @click.self.stop="set(index)">
-                                --
+                            <span class=" in-block resave-width">
+                                {{value.resave}}次
                             </span>
-                                <span class="text-left in-block time-width" @click.self.stop="set(index)">
-                                {{ format(value.updated_at)}}
+                            <span class=" in-block download-width">
+                                {{value.download}}次
+                            </span>
+                            <span class=" in-block download-width">
+                                {{value.private === "0" ? "公开": "加密"}}
+                            </span>
+
+                            <span class=" in-block time-width"  @click="showlink(index)" >
+                                {{ format(value.created_at)}}
                              </span>
                             </div>
-                            <div v-else>
-                                <div class="text-left in-block " style="width: 40px;position: relative;top:8px">
-                                    <div>
-                                        <mu-checkbox v-model="selects[index]" />
-                                    </div>
-                                </div>
-                                <div class="text-left in-block filename-width  "  @click.self.stop="set(index)" v-if="selectrename !== index"  >
-                                    <div  class="hidename" >
-                                        <mu-tooltip class="hidename" style="width:80%" placement="bottom" :content="value.file_name">
-                                            <span>{{value.file_name}}</span>
-                                        </mu-tooltip>
-                                    </div>
-                                    <!--<span class="hidename " >  </span>-->
-                                </div>
-                                <span class="text-left in-block filename-width "  v-else>
-                                <mu-text-field class="left-margin phone" v-model="new_name" :placeholder="value.file_name" />
-                                <mu-button icon color="success" small class="name-button" @click="torename()">
-                                    <mu-icon value="done" />
-                                </mu-button>
-                                <mu-button icon color="error" small class="name-button" @click="cancelrename()">
-                                    <mu-icon value="clear" />
+                            <span class=" in-block" style="position: absolute;left: 35%;top:0;" v-if="hoverindex === index" >
+                                <mu-button icon color="error" small class="name-button" @click="tocancelshare(index)">
+                                        <mu-icon value="delete_forever" />
                                 </mu-button>
                             </span>
-                                <span class="text-left in-block size-width">
-                                <span > {{bytesToSize(value.file_size)}}</span>
-                            </span>
-                                <span class="text-left in-block time-width">
-                                {{ format(value.updated_at)}}
-                            </span>
-                            </div>
-                            <span class=" in-block" style="position: absolute;left: 45%;top:0;" v-if="hoverindex === index" >
-                            <mu-button icon color="error" small class="name-button" @click="godownload(index)">
-                                <mu-icon value="cloud_download" />
-                            </mu-button>
+                            <div v-if="showlinks === index" class="dds" style="padding-left: 0">
+                                <div style="padding-left:0;position: relative ;left:-140px">
+                                    分享链接: {{webpath}}/share/link/{{value.share_path}}
+                                    <span class="in-block" style="margin-left: 20px"  v-if="value.private === '1'" > 提取码：{{value.code}}</span>
+                                    <span class="in-block" style="margin-left: 20px" v-if="value.private === '0'"> 公开分享</span>
+                                    <span class="in-block" style="margin-left: 20px" v-else> 私密分享</span>
+                                    <mu-button class="copybtn" style="margin-left: 10px" flat color="red" @click="copylink(index)"> Copy Link </mu-button>
+                                </div>
 
-                            <mu-menu placement="top-start" :open.sync="openlist" >
-                                <mu-button icon color="error" small class="name-button" >
-                                    <mu-icon value="more_vert" />
-                                </mu-button>
-                                <mu-list slot="content" >
-                                    <mu-list-item button @click="prename(index)">
-                                       <mu-list-item-title> RENAME</mu-list-item-title>
-                                    </mu-list-item>
-                                        <mu-list-item button @click="gomove(index)">
-                                       <mu-list-item-title> MOVE</mu-list-item-title>
-                                    </mu-list-item>
-                                    <mu-list-item button @click="gocopy(index)">
-                                       <mu-list-item-title> COPY</mu-list-item-title>
-                                    </mu-list-item>
-                                    <mu-list-item button @click="godelete(index)">
-                                       <mu-list-item-title> DELETE</mu-list-item-title>
-                                    </mu-list-item>
-                                </mu-list>
-                            </mu-menu>
-                        </span>
+                            </div>
                         </dd>
                     </div>
                     <div v-else>
-                        nofile(s)
+                        no share(s)
                     </div>
                 </mu-load-more>
             </dl>
         </transition>
+        <a :href="herf" :download="downloadname" v-show="false"  ref="downloadfile">4</a>
+        <my-dialog   :action="()=>todelete()" :open.sync="selectopen.delete"  :name="'取消分享'" :message="'确认要取消'+selectnumber +'个分享么?'" :confirm="true" />
     </div>
 
 </template>
@@ -150,27 +93,19 @@
     import formats from './../plugings/formats'
     import FolderAPI from '../plugings/API/folderAPI'
     import FileAPI from '../plugings/API/fileAPI'
+    import ShareAPI from "../plugings/API/shareAPI"
+    import MyDialog from "../components/myDialog";
+    import Clipboard from 'clipboard';
 
     export default {
 
+        components: {MyDialog},
         name: "myshare",
         props:{
-            move:{
-                type:Function,
-                default:()=>{},
-            },
-            copy:{
-                type:Function,
-                default:()=>{},
-            },
             delete:{
                 type:Function,
                 default:()=>{},
             },
-            download:{
-                type:Function,
-                default:()=>{},
-            }
         },
         data()
         {
@@ -189,45 +124,57 @@
                 firstin:true,
                 filelist:false,
                 over:false,
-                openlist:false,
                 hoverindex:-1,
                 // rename: [],
-                selectrename :-1,
+                herf:'',
+                downloadname:'',
+                selectnumber:5,
+                showlinks:-1,
+                isdownload:false,
+                selectopen:{
+                    delete:false,
+                },
+                selectpaths:[],
+                webpath :'',
 
             }
         },
         created()
         {
             this.datas = [];
-            if (this.$store.state.path.length === 1 && this.$route.query.path)
-            {
-                let arr = this.$route.query.path.split('/');
-                arr = arr.filter((val)=>{
-                    return !(val === "" || val === "/");
-                });
-                arr.unshift("/");
-                if (arr.length !== 0 )
-                {
-                    this.$store.commit('changePath',arr)
-                }
-            }
-            if (sessionStorage.getItem(this.fullPath) && JSON.parse(sessionStorage.getItem(this.fullPath)).datas.length !== 0 )
-            {
-                this.page = JSON.parse(sessionStorage.getItem(this.fullPath)).page;
-            }
-            if (!this.$route.query.path && !this.$route.query.search)
-            {
-                this.listfile(this.page);
-            }
-            else if (this.$route.query.path )
-            {
-                this.listfile(this.page,this.getpath());
-            }
-            else if (this.$route.query.search)
-            {
-                console.log("search");
-                console.log(this.$route.query.search);
-            }
+            this.$store.commit("storeNew",{key:"title_name",data:"My Share"});
+            let a = window.location.href.split("/");
+            a.pop();
+            this.webpath = "http://"+a.pop();
+            // if (this.$store.state.path.length === 1 && this.$route.query.path)
+            // {
+            /*                let arr = this.$route.query.path.split('/');
+                            arr = arr.filter((val)=>{
+                                return !(val === "" || val === "/");
+                            });
+                            arr.unshift("/");
+                            if (arr.length !== 0 )
+                            {
+                                this.$store.commit('changePath',arr)
+                            }
+                        }
+                        if (sessionStorage.getItem(this.fullPath) && JSON.parse(sessionStorage.getItem(this.fullPath)).datas.length !== 0 )
+                        {
+                            this.page = JSON.parse(sessionStorage.getItem(this.fullPath)).page;
+                        }
+                        if (!this.$route.query.path && !this.$route.query.search)
+                        {
+                            this.listfile(this.page);
+                        }
+                        else if (this.$route.query.path )
+                        {*/
+            this.listfile(this.page,this.getpath());
+            /* }
+             else if (this.$route.query.search)
+             {
+                 console.log("search");
+                 console.log(this.$route.query.search);
+             }*/
 
 
         },
@@ -265,7 +212,7 @@
                 // console.log("aaaaaaaaaaa");
                 this.listfile(this.page,val);
             },
-            selects(val)
+            /*selects(val)
             {
                 let file = [];
                 let folder = [];
@@ -280,12 +227,11 @@
 
                 data = {folder, file};
                 this.$store.commit("storeNew",{key:"selected",data});
-            },
+            },*/
             fresh(val)
             {
                 if (val)
                 {
-                    this.cancelrename();
                     this.listfile(1,this.getpath());
                     this.$store.commit("storeNew",{key:"refresh",data:false});
                     this.end = false;
@@ -300,28 +246,15 @@
                     a.scrollTop = 0;
                 //   document.documentElement.scrollTop = 0;
             },
-            isrename(val)
-            {
-                //  this.
-                if (this.rename.length === 1)
-                {
-                    this.selectrename = this.rename[0];
-                }
-                else
-                {
-                    this.rename = -1;
-                }
-                this.$store.commit("storeNew",{key:"rename",data:false});
-            },
+
 
 
         },
         methods:{
             refresh () {
                 this.refreshing = true;
-                sessionStorage.removeItem(this.getpath());
+                // sessionStorage.removeItem(this.getpath());
                 this.page = 1;
-                this.cancelrename();
                 this.listfile(1).then((result)=>{
                     this.refreshing = false;
                     this.end = false;
@@ -363,66 +296,29 @@
             listfile(page ,dir = null,foldername = null)
             {
                 return new Promise((resolve,reject)=>{
-                    let url = "file/showpageinate";
-                    dir = dir ||this.fullPath;
-                    //let gets = [];
-                    if ((sessionStorage.getItem(dir) && JSON.parse(sessionStorage.getItem(dir)).datas.length !== 0 )&& (page === 1 ||this.firstin === true))
-                    {
-                        this.firstin = false;
-                        //this.page ++;
-                        this.datas = JSON.parse(sessionStorage.getItem(dir)).datas;
+                    ShareAPI.usershare(page).then((resolves)=>{
+                        if (page === 1) {
+                            this.datas = [];
+                        }
+                        if (page === 1)
+                        {
+                            this.selects = Array(this.datas.length).fill(false);
+                        }
+                        else {
+                            let lens = this.datas.length - this.selects.length;
+                            this.selects = this.selects.concat(Array(lens).fill(false));
+                        }
+                        if (resolves.length === 0)
+                        {
+                            this.end = true;
+                        }else
+                        {
+                            console.log(resolves);
+                            this.datas = this.datas.concat(resolves);
+                        }
                         resolve();
-                    }else
-                    {
-                        let ajax = new myajax();
-                        let data = {
-                            dir,
-                            page,
-                            pagesize:this.pagesize
-                        };
-                        ajax.ajax(url,data,(response)=>{
-                            //   console.log(response.data);
-                            // console.log(this.datas);
-                            if (page === 1) {
-                                this.datas = [];
-                            }
-                            if (response.data.success[0].length === 0)
-                            {
-                                this.end = true;
-                            }/*else
-                           {
-
-                           }*/
-                            response.data.success.forEach((value)=>{
-                                this.datas = this.datas.concat(value);
-                            });
-                            //   console.log(this.datas);
-                            sessionStorage.setItem(dir,JSON.stringify({datas:this.datas,page}));
-                            resolve();
-                        }, (err)=>{
-                            console.log(err.response);
-                        }).then(()=>{
-                            if(foldername)
-                            {
-                                this.$store.commit('pushPath',foldername);
-                            }
-                            console.log(this.selects);
-                        });
-                    }
-
-                }).then(()=>{
-                    if (page === 1)
-                    {
-
-                        this.selects = Array(this.datas.length).fill(false);
-                    }
-                    else {
-                        let lens = this.datas.length - this.selects.length;
-                        this.selects = this.selects.concat(Array(lens).fill(false));
-                    }
-
+                    });
                 });
-
             },
             getpath(index = null)
             {
@@ -478,15 +374,41 @@
                     console.log(reject);
                 });
             },
+            copylink(index)
+            {
+                //  let Url = this.versions[index].notifyUrl;
+                let text = this.datas[index].code === "0" ?  `分享链接:${this.webpath + "/" + this.datas[index].share_path}`:`分享链接:${this.webpath + "/" + this.datas[index].share_path}\n 提取码:${this.datas[index].code}`;
+
+                let clipboard = new Clipboard('.copybtn', {
+                    text: ()=> {
+                        return text;
+                    }
+                });
+                clipboard.on('success', e => {
+                    console.log("复制成功!");
+                    // 释放内存
+                    this.copysuccess = true;
+                    clipboard.destroy()
+                });
+                clipboard.on('error', e => {
+                    // 不支持复制
+                    // tips(this, '该浏览器不支持自动复制!', 'warning');
+                    // 释放内存
+                    clipboard.destroy()
+                })
+
+
+            },
             cancelcreate()
             {
                 this.$store.commit("storeNew",{key:'createnewfolder',data:false});
                 this.new_name = '';
             },
-            to(filename)
+            to(sharepath)
             {
-                this.$router.push({ name: 'dir', query: { path: this.fullPath+'/'+ filename }});
+                this.$router.push("/share/link/"+sharepath);
             },
+
             tosort(by)
             {
                 console.log("fdgdfgd");
@@ -533,80 +455,58 @@
                 this.openlist = false;
                 this.hoverindex = -1 ;
             },
-            torename ()
-            {
-                let sels = this.selectrename;
-                let newname = this.new_name;
-                if (this.datas[sels].is_file === false)
-                {
-                    let oldname = this.datas[sels].folder_name;
-                    FolderAPI.rename(oldname,newname,this.fullPath).then((resolve)=>{
-                        this.new_name = '';
-                        sessionStorage.removeItem(this.fullPath);
-                        this.refresh();
-                        this.cancelrename();
-                    },(reject)=>{
-                        console.log(reject);
-                    }).then(()=>this.$store.commit("storeNew",{key:"rename",data:false}));
-                }
-                else
-                {
-                    let oldname = this.datas[sels].file_name;
-                    FileAPI.rename(oldname,newname,this.fullPath).then((resolve)=>{
-                        this.new_name = '';
-                        sessionStorage.removeItem(this.fullPath);
-                        this.refresh();
-                        this.cancelrename();
-                    },(reject)=>{
-                        console.log(reject);
-                    }).then(()=>this.$store.commit("storeNew",{key:"rename",data:false}));
-                }
-
-            },
-            cancelrename()
-            {
-                this.selectrename = -1;
-                this.new_name = '';
-                this.$store.commit("storeNew",{key:"rename",data:false});
-            },
-            prename(index = -1)
-            {
-                if(index !== -1)
-                {
-                    this.selectrename = index;
-                }
-                this.openlist = false;
-                this.new_name = '';
-
-                this.$store.commit("storeNew",{key:"rename",data:true});
-            },
             lazyload(e)
             {
                 console.log(e);
             },
-            gomove(index)
+            showlink(index)
             {
-                this.selects = Array(this.datas.length).fill(false);
-                this.$set(this.selects ,index,true);
-                this.move();
-            },
-            gocopy(index)
-            {
-                this.selects = Array(this.datas.length).fill(false);
-                this.$set(this.selects ,index,true);
-                this.copy();
-            },
-            godelete(index)
-            {
-                this.selects = Array(this.datas.length).fill(false);
-                this.$set(this.selects ,index,true);
-                this.delete();
+                if(this.showlinks === index)
+                {
+                    this.showlinks = -1;
+
+                }else
+                {
+                    this.showlinks = index;
+
+                }
             },
             godownload(index)
             {
-                this.selects = Array(this.datas.length).fill(false);
-                this.$set(this.selects ,index,true);
-                this.download();
+                ShareAPI.download({folder:[],file:[]},'/',this.datas[index].share_path).then((resolve)=>{
+                    console.log(resolve);
+                    this.isdownload = true;
+                    this.herf = "http://" + resolve.path;
+                    this.downloadname = resolve.name;
+                    this.$nextTick(()=>{
+                        this.$refs.downloadfile.click();
+                        this.isdownload = false;
+                    });
+                });
+            },
+            tocancelshare(tocancelshare)
+            {
+                let sel = this.selects;
+                this.selectpaths = [];
+                sel.forEach((val,index)=>
+                {
+                    if (val === true)
+                        this.selectpaths.push(this.datas[index].share_path)
+                });
+                this.selectnumber = this.selectpaths.length;
+                this.selectopen.delete = true;
+            },
+            todelete()
+            {
+
+                ShareAPI.todelete(this.selectpaths).then(()=>{
+                    this.listfile(1);
+                });
+            },
+            selectcalcel(index)
+            {
+                this.selectnumber = 1;
+                this.selectopen.delete = true;
             }
         }
     }
@@ -616,7 +516,7 @@
 
     .pan
     {
-        user-select: none;
+        /*user-select: none;*/
     }
     ul li{
         list-style: none;
@@ -627,17 +527,28 @@
     }
     .in-block{
         display: inline-block;
-        user-select: none;
+        /*user-select: none;*/
         vertical-align:top;
     }
     .filename-width{
-        width: 51%;
+        width: 38%;
     }
 
     .size-width{
-        width: 17%;
+        width: 8%;
     }
+     .read-width{
+         width: 8%;
+     }
+     .resave-width{
+         width: 8%;
+     }
+     .download-width{
+         width: 8%;
+     }
+     .copybtn{
 
+     }
     .time-width{
         width: 24%;
     }
@@ -657,12 +568,12 @@
         float: left;
     }
     .dds{
-        height: 3em;
+        min-height: 3em;
         line-height:3em;
         margin-left: 0;
         position: relative;
         /*font-size: 0;*/
-        -webkit-text-size-adjust:none;
+        /*-webkit-text-size-adjust:none;*/
         /*border-top: 1px solid black;*/
         /*overflow:hidden;*/
         white-space:nowrap;
@@ -731,3 +642,4 @@
 
 
 </style>
+

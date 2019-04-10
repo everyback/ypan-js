@@ -8,7 +8,7 @@
                 <router-view style="animation-duration:0.5s;"   />
               </transition>
           </div>
-          <footer style="margin-top: 5px;user-select: none"> This is foot </footer>
+          <footer style="margin-top: 5px;user-select: none"> author@everyback 543245543 </footer>
       </div>
   </div>
 </template>

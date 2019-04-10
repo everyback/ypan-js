@@ -29,7 +29,7 @@ let state = {
     ],*/
     role_items:[],
 
-
+    sharefolderpath:['/'],
 
     selected:{
         file:[],
@@ -137,8 +137,6 @@ let getters = {
         });
         arr.unshift("");
         return arr.join('/');
-
-
     },
     paths(state)
     {
@@ -175,6 +173,19 @@ let getters = {
             return  (state.user_info.space_used/ state.user_info.space).toFixed(4);
         else
             return 0.0000;
+    },
+    fullsharefolderpath(state)
+    {
+        if (state.sharefolderpath.length === 1)
+        {
+            return '/';
+        }
+        let arr = state.sharefolderpath;
+        arr = arr.filter((val)=>{
+            return !(val === "" || val === "/");
+        });
+        arr.unshift("");
+        return arr.join('/');
     }
 
 };
@@ -206,7 +217,7 @@ let mutations = {
     {
         Vue.set(state.filecancel,datas.key,datas.data);
     },
-    addPath(state,data)
+    addPath(state,data)//本身路径
     {
         state.path = state.path.concat(data);
     },
@@ -222,6 +233,24 @@ let mutations = {
     {
         state.path = data;
     },
+
+    addShareFolderPath(state,data)//分享路径
+    {
+        state.sharefolderpath = state.sharefolderpath.concat(data);
+    },
+    pushShareFolderPath(state,data)
+    {
+        state.sharefolderpath.push(data);
+    },
+    popShareFolderPath(state,data =1)
+    {
+        state.sharefolderpath.pop();
+    },
+    changeShareFolderPath(state,data)
+    {
+        state.sharefolderpath = data;
+    },
+
 /*
     pushname(state,data)
     {
@@ -245,7 +274,9 @@ let mutations = {
     calcminus(state)
     {
         state.calcindoing --;
-    }
+    },
+
+
 
 };
 

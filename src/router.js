@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Home from './views/Home.vue'
 import dirpan from '@/components/pan'
 import store from './store'
+// import disk from "./views/disk"
 Vue.use(Router);
 // import testtree from '@/components/Folder/folder'
 import getrole from "@/plugings/API/getrolerouter"
@@ -22,6 +23,7 @@ const share =resolve('share');
 const myshare = resolve('myshare');
 const sharecontent = resolve("sharecontent");
 const publicshare = resolve("publicshare");
+const sharecontentpan = resolve("sharecontentpan");
 // const dirpan = resolve('',"@components/pan");
 
 function resolve(name,fullpath = null)
@@ -55,17 +57,19 @@ const router = new Router({
             {
                 path: 'disk',
                 component: disk,
-                children:[
+               // name:"disk",
+                   children:[
                     {
-                        path: 'dir/:path',
-                        name:'dir',
-                        component: dirpan,
-                    },
-                    {
-                        path: '/',
-                        redirect: '/home/disk/dir',
-                    },
-                ],
+                         path: 'dir/:path?',
+                         name:'dir',
+                         component: dirpan,
+                     },
+                     {
+                         path: '/',
+                         redirect: '/home/disk/dir',
+                     },
+
+                 ],
             },
 
             ],
@@ -78,11 +82,11 @@ const router = new Router({
             path: '/',
             redirect: '/home/disk',
         },
-        {
+/*        {
             path: '/index',
             name:'index',
             component: Mindex, //展示引导界面,先不做
-        },
+        },*/
         {
             path: '/login',
             name: 'login',
@@ -119,8 +123,15 @@ const router = new Router({
                 },
                 {
                     path: 'link/:sharepath',//链接具体内容
-                    name: 'link',
+                    // name: 'link',
                     component: sharecontent,
+                    children:[
+                        {
+                            path: '/',
+                            name: 'sharecontentpan',
+                            component: sharecontentpan,
+                        },
+                    ],
                 },
                 {
                     path: 'public',
