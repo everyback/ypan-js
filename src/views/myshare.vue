@@ -64,7 +64,7 @@
                                 </mu-button>
                             </span>
                             <div v-if="showlinks === index" class="dds" style="padding-left: 0">
-                                <div style="padding-left:0;position: relative ;left:-140px">
+                                <div style="padding-left:0;position: relative ;width:350px">
                                     分享链接: {{webpath}}/share/link/{{value.share_path}}
                                     <span class="in-block" style="margin-left: 20px"  v-if="value.private === '1'" > 提取码：{{value.code}}</span>
                                     <span class="in-block" style="margin-left: 20px" v-if="value.private === '0'"> 公开分享</span>

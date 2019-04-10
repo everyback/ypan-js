@@ -16,7 +16,7 @@
 "  style="max-width:5vh; max-height:5vw" />
                             </span>
                         <div slot="default" class="small-font" v-if="islogin">
-                            <span>您好，<a href="#">{{user.name}}</a>！</span>
+                            <span>您好，<router-link :to="{ name: 'setting'}">{{user.name}}</router-link>！</span>
                         </div>
                         <div v-else>
                             <p><a href="/login">未登录</a></p>
@@ -238,9 +238,14 @@
             jumpto(val)
             {
                 this.$store.commit('storeNew',{key:'title_name',data:val.name});
+
             },
             pushto(items)
             {
+                if (!this.bigscreen)
+                {
+                    this.sidebar.open = false;
+                }
                 this.$router.push(items.path);
             },
             sleft(s)
