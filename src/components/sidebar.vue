@@ -55,7 +55,7 @@
                     <!-- <mu-appbar style="position: absolute;bottom: 0;width: 100% "  z-depth="0">
 
                      </mu-appbar>-->
-                    <div style="order: 99;width: 100%;background-color: whitesmoke;height:3rem" >
+                    <div style="order: 99;width: 100%;background-color: whitesmoke;height:3rem" v-if="islogin" >
                         <div style="  margin-top:-10px;margin-left: 20px">
                            <space />
                         </div>

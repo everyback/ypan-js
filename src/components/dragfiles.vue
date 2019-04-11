@@ -243,14 +243,6 @@
 
 <style scoped>
 
-    .hover{
-        display:block;
-        position: fixed;
-    }
-    .none{
-        display:none;
-        position: fixed;
-    }
     .getfile{
         left:0;
         top:0;

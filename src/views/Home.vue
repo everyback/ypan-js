@@ -54,16 +54,8 @@ export default {
 
 }
 </script>
-<style>
+<style scoped>
 
-    .hover{
-        display:block;
-        position: fixed;
-    }
-    .none{
-        display:none;
-        position: fixed;
-    }
 </style>
 
 

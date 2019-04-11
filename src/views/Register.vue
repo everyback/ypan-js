@@ -173,7 +173,7 @@
                this.dialog = {
                    open : true,
                    name :'错误',
-                   msg  : err.response.data.failed,
+                   msg  : err.response.data.error,
                    path :'',
                };
                this.$nextTick(()=>{this.dialog.open = false; this.close();});

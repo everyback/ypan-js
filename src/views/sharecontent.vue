@@ -4,7 +4,8 @@
         <div v-if="!needcode && !outtime"  >
             <div >
                 <mu-paper style=" min-height: 5rem; " :z-depth="5">
-                    <p>这是来自于用户{{sharername}}的 {{code !== "" && code !== null ? "私密":"公开"}}分享 </p>
+                    <p v-if="!issharer">这是来自于用户{{sharername}}的 {{code !== "" && code !== null ? "私密":"公开"}}分享 </p>
+                    <p v-if="issharer">这是来自于用户自身的分享</p>
                     <div class="flex-box">
                         <mu-button  :disabled="!haveselected && ( issharer || islogin)"  @click="opencopy()">
                             COPY

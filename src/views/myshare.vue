@@ -82,7 +82,7 @@
             </dl>
         </transition>
         <a :href="herf" :download="downloadname" v-show="false"  ref="downloadfile">4</a>
-        <my-dialog   :action="()=>todelete()" :open.sync="selectopen.delete"  :name="'取消分享'" :message="'确认要取消'+selectnumber +'个分享么?'" :confirm="true" />
+        <my-dialog   :action="()=>todelete()" :open.sync="selectopen.delete"  :name="'取消分享'" :message="'确认要取消'+'1' +'个分享么?'" :confirm="true" />
     </div>
 
 </template>
@@ -128,7 +128,7 @@
                 // rename: [],
                 herf:'',
                 downloadname:'',
-                selectnumber:5,
+                selectnumber:1,
                 showlinks:-1,
                 isdownload:false,
                 selectopen:{
@@ -377,7 +377,7 @@
             copylink(index)
             {
                 //  let Url = this.versions[index].notifyUrl;
-                let text = this.datas[index].code === "0" ?  `分享链接:${this.webpath + "/" + this.datas[index].share_path}`:`分享链接:${this.webpath + "/" + this.datas[index].share_path}\n 提取码:${this.datas[index].code}`;
+                let text = this.datas[index].code == "0" ?  `分享链接:${this.webpath + "/share/link/" + this.datas[index].share_path}`:`分享链接:${this.webpath + "/share/link/" + this.datas[index].share_path}\n 提取码:${this.datas[index].code}`;
 
                 let clipboard = new Clipboard('.copybtn', {
                     text: ()=> {

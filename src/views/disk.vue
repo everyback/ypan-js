@@ -3,7 +3,7 @@
        <div v-if="islogin">
            <div >
                <mu-paper style=" min-height: 5rem; " :z-depth="5">
-                   <div class="flex-box">
+                   <div class="flex-box" style="position: relative;left:0">
                        <mu-menu placement="bottom-start" open-on-hover >
                            <mu-button color="primary">UPLOAD</mu-button>
                            <mu-list slot="content">
@@ -20,22 +20,22 @@
                        <mu-button @click="opencreate()" >
                            CREATE NEW FOLDER
                        </mu-button>
-                       <mu-button v-if="haveselected" @click="openmove()">
+                       <mu-button  :class=" haveselected ? '':'visib'" @click="openmove()">
                            MOVE
                        </mu-button>
-                       <mu-button v-if="haveselected" @click="opencopy()">
+                       <mu-button  :class=" haveselected ? '':'visib'" @click="opencopy()">
                            COPY
                        </mu-button>
-                       <mu-button v-if="haveselected" @click="opendelete()">
+                       <mu-button  :class=" haveselected ? '':'visib'" @click="opendelete()">
                            DELETE
                        </mu-button>
-                       <mu-button v-if="haveselected" @click="download()">
+                       <mu-button  :class=" haveselected ? '':'visib'" @click="download()">
                            DOWNLOAD
                        </mu-button>
-                       <mu-button v-if="haveselected" @click="openshare()">
+                       <mu-button  :class=" haveselected ? '':'visib'" @click="openshare()">
                            SHARE
                        </mu-button>
-                       <mu-button v-if="haveselected" @click="onrename()" :disabled="selectsum !== 1">
+                       <mu-button  :class=" haveselected ? '':'visib'" @click="onrename()" :disabled="selectsum !== 1">
                            RENAME
                        </mu-button>
                    </div>
@@ -54,11 +54,16 @@
                <!--</keep-alive>-->
            </mu-paper>
            <upload />
-           <dragfiles />
+           <!--<dragfiles />-->
            <a :href="herf" :download="downloadname" v-show="false"  ref="downloadfile">4</a>
        </div>
        <div v-else>
-           <p> unlogin </p>
+           <mu-paper style=" min-height: 50rem; " :z-depth="5">
+               <p style="position: absolute;top: 30%;display: block;font-size: 3em; color: darkgrey">
+                   尚未登陆，您现在只能查看及下载公共分享！登陆以使用更多功能
+               </p>
+           </mu-paper>
+
        </div>
    </div>
 
@@ -69,7 +74,7 @@
     import {mapGetters} from 'vuex'
     // import Pan from "./../components/pan"
     import upload from './../components/upload'
-    import dragfiles from './../components/dragfiles'
+    // import dragfiles from './../components/dragfiles'
     import Folder from "../components/Folder/folder"
     import FolderAPI from '../plugings/API/folderAPI'
     import FileAPI from '../plugings/API/fileAPI'
@@ -87,7 +92,7 @@
             MyDialog,
             Folder,
             // Pan,
-            dragfiles,
+            // dragfiles,
             upload,
         },
         name: "disk",
@@ -381,6 +386,9 @@
         align-content: start;
         position: relative;
         left: 0;
+    }
+    .visib{
+        visibility:hidden;
     }
 
 </style>
