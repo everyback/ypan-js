@@ -7,7 +7,7 @@
                     <p v-if="!issharer">这是来自于用户{{sharername}}的 {{code !== "" && code !== null ? "私密":"公开"}}分享 </p>
                     <p v-if="issharer">这是来自于用户自身的分享</p>
                     <div class="flex-box">
-                        <mu-button  :disabled="!haveselected && ( issharer || islogin)"  @click="opencopy()">
+                        <mu-button  :disabled="!((!haveselected && ( issharer || islogin)) && islogin)"  @click="opencopy()">
                             COPY
                         </mu-button>
                         <mu-button :disabled="!haveselected" @click="download()">
@@ -139,7 +139,7 @@
                 let pro = [];
                 if (data.file.length + data.folder.length !== 0)
                 {
-                    pro.push(ShareAPI.copy(data,this.sharepath,this.fullsharefolderpath,to));
+                    pro.push(ShareAPI.copy(data,this.sharepath,this.fullsharefolderpath,to,this.code));
                 }
                 Promise.all(pro).then((resolve)=>{
                     //this.selectopen.move = false;
@@ -174,7 +174,7 @@
                 this.$nextTick(()=>{
                         let data = this.$store.state.selected;
                         let pro = [];
-                        pro.push(ShareAPI.download({files:data.file,folders:data.folder},this.fullsharefolderpath,this.sharepath));
+                        pro.push(ShareAPI.download({files:data.file,folders:data.folder},this.fullsharefolderpath,this.sharepath,this.code));
                         Promise.all(pro).then((resolve)=>{
                             console.log(resolve[0]);
                             this.isdownload = true;

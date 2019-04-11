@@ -378,7 +378,6 @@
 
 <style scoped>
 
-
     .flex-box{
         flex-flow: row wrap;
         justify-content:flex-start;

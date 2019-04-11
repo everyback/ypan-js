@@ -56,6 +56,10 @@ export default {
 </script>
 <style scoped>
 
+    .hover{
+
+    }
+
 </style>
 
 

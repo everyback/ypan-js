@@ -39,13 +39,13 @@ class shareAPI{
         });
     };
 
-    static copy({file,folder},sharepath,dir,dir_to)
+    static copy({file,folder},sharepath,dir,dir_to,code="")
     {
         return new Promise((resolve,reject)=>{
             let url = 'share/copy';
             let ajax = new myajax();
 
-            ajax.ajax(url,{filename:file,foldername:folder,sharepath,dir,dir_to},(response)=>{
+            ajax.ajax(url,{filename:file,foldername:folder,sharepath,dir,dir_to,code},(response)=>{
                 console.log(response);
                 resolve(response.data.success);
             },(err)=>{
@@ -57,14 +57,14 @@ class shareAPI{
         });
     };
 
-    static download(datas,dir,sharepath)
+    static download(datas,dir,sharepath,code="")
     {
 
         return new Promise((resolve,reject)=>{
             //let url = 'createdownload';
             let url = 'share/createdownload';
             let ajax = new myajax();
-            ajax.ajax(url,{filename:datas.files,foldername:datas.folders,dir,sharepath},(response)=>{
+            ajax.ajax(url,{filename:datas.files,foldername:datas.folders,dir,sharepath,code},(response)=>{
                 resolve(response.data.success);
             },(err)=>{
                 console.log(err.response);

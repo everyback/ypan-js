@@ -65,7 +65,7 @@
                                 </span>
                             </div>
                             <span class=" in-block" style="position: absolute;left: 45%;top:0;" v-if="hoverindex === index" >
-                                <mu-button icon color="error" small class="name-button" @click="godownload(index)">
+                                <mu-button icon color="error" small class="name-button" @click="download(index)">
                                     <mu-icon value="cloud_download" />
                                 </mu-button>
                             </span>
@@ -77,6 +77,7 @@
                 </mu-load-more>
             </dl>
         </transition>
+        <a :href="herf" :download="downloadname" v-show="false"  ref="downloadfiles">4</a>
     </div>
 </template>
 
@@ -85,6 +86,7 @@
     import myajax from './../plugings/API/myajax'
     import {mapGetters} from 'vuex'
     import formats from './../plugings/formats'
+    import ShareAPI from "../plugings/API/shareAPI"
 
     export default {
         name: "sharecontentpan",
@@ -119,6 +121,8 @@
                 selects:[],
                 hoverindex:-1,
                 herecode:'',
+                herf:'',
+                downloadname:'',
             }
         },
         beforeCreate()
@@ -274,6 +278,46 @@
 /*                    this.openlist = false;
                 }*/
             },
+            download(index)
+            {
+                if (index === -1)
+                {
+                    return 0;
+                }
+                this.$nextTick(()=>{
+                        let data = this.$store.state.selected;
+                        let pro = [];
+                        let fs = {
+                            files:[],
+                            folders:[],
+                        };
+                        if (!!this.datas[index].isfile)
+                        {
+                            fs.files = [this.datas[index].name];
+                        }
+                        else
+                        {
+                            fs.folders = [this.datas[index].name];
+                        }
+
+                        pro.push(ShareAPI.download(fs,this.fullsharefolderpath,this.sharepath,this.code));
+                        Promise.all(pro).then((resolve)=>{
+                            console.log(resolve[0]);
+                            this.isdownload = true;
+                            this.herf = "http://" + resolve[0].path;
+                            this.downloadname = resolve[0].name;
+                            this.$nextTick(()=>{
+                                this.$refs.downloadfiles.click();
+                                this.isdownload = false;
+                            });
+                        },(reject)=>{
+                            console.log("failed");
+                        });
+                    }
+                );
+            },
+
+
 
             listfile(page, dir = null, foldername = null) {
                 return new Promise((resolve, reject) => {

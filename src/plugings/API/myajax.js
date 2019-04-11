@@ -3,7 +3,7 @@ import JsEncrypt from 'jsencrypt'
 import axios from 'axios'
 import store from '../../store'
 import Vue from 'vue'
-import key from './key.local'
+import key from './key'
 //import process from ''
 
 class ajax{
@@ -11,8 +11,8 @@ class ajax{
     constructor() {
         this.CancelToken = axios.CancelToken;
         this.source = this.CancelToken.source();
-      // this.baseURL = 'http://127.0.0.1:8002/api/';
-        this.baseURL = 'http://47.107.45.231:8080/api/';
+       this.baseURL = 'http://127.0.0.1:8002/api/';
+      // this.baseURL = 'http://47.107.45.231:8080/api/';
     };
 
     ajax(url,data,callback,errcallback = (err)=>{console.log(err.response)},method = 'get',front = true)
