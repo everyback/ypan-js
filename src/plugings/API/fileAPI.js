@@ -89,6 +89,22 @@ class fileAPI{
         });
     }
 
+    static search(keyword,page)
+    {
+        return new Promise((resolve,reject)=>{
+            //let url = 'createdownload';
+            let url = 'createpath';
+            let ajax = new myajax();
+            ajax.ajax(url,{filename:datas.files,foldername:datas.folders,dir},(response)=>{
+                resolve(response.data.success);
+            },(err)=>{
+                console.log(err.response);
+                reject();
+            },'post')
+
+        });
+    }
+
     static getfilelist( items)//get  entry
     {
         (async ()=> {

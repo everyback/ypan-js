@@ -496,7 +496,7 @@
                 this.selectnumber = this.selectpaths.length;
                 this.selectopen.delete = true;
             },
-            todelete()
+            todelete(index)
             {
 
                 ShareAPI.todelete(this.selectpaths).then(()=>{

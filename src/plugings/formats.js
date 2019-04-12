@@ -24,7 +24,8 @@ export default
 
     },
     bytesToSize(bytes) {
-        if (bytes === 0)
+      //console.log(bytes);
+        if (parseInt(bytes) == 0  )
             return '0 B';
         let k = 1024;
         let sizes = ['B','KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
